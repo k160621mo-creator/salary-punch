@@ -183,6 +183,121 @@
             background: var(--bg);
             border-color: var(--primary);
         }
+
+        /* 彈出式後台管理面板樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-height: 85vh;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 24px 20px 40px 20px;
+            overflow-y: auto;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: var(--bg);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--text-sub);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.3);
+        }
+
+        .report-section {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .report-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+            border-bottom: 1px solid var(--bg);
+        }
     </style>
 </head>
 <body>
@@ -238,16 +353,16 @@
                 <div class="stat-val" id="baseSalaryVal">$37,000</div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">加班費累計 (+)</div>
+                <div class="stat-label">勞健保扣除 (-)</div>
+                <div class="stat-val danger" id="insuranceFeeVal">-$850</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">加班/其他 (+)</div>
                 <div class="stat-val success" id="otFeeVal">$0</div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">遲到扣款 (-)</div>
-                <div class="stat-val danger" id="lateFeeVal">-$0</div>
-            </div>
-            <div class="stat-box">
                 <div class="stat-label">本月預估實領</div>
-                <div class="stat-val primary" id="totalMonthVal">$37,000</div>
+                <div class="stat-val primary" id="totalMonthVal">$36,150</div>
             </div>
         </div>
     </div>
@@ -259,6 +374,53 @@
         </button>
     </div>
 
+    <!-- 後台管理彈出視窗 (Modal) -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">⚙️ 後台設定與月報表</div>
+                <button class="close-modal" onclick="closeAdminPortal()">✕</button>
+            </div>
+
+            <!-- 薪資與勞健保自訂設定 -->
+            <div class="form-group">
+                <label class="form-label">💰 約定底薪 (NT$)</label>
+                <input type="number" id="inputBaseSalary" class="form-input" value="37000">
+            </div>
+            <div class="form-group">
+                <label class="form-label">🛡️ 自訂勞健保總扣款金額 (NT$)</label>
+                <input type="number" id="inputInsurance" class="form-input" value="850">
+            </div>
+            <button class="btn-save" onclick="saveSettings()">儲存薪資與勞健保設定</button>
+
+            <!-- 當月完整報表總覽 -->
+            <div class="report-section">
+                <div style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--primary);">📈 當月完整薪資與出勤報表</div>
+                <div class="report-row">
+                    <span>統計月份</span>
+                    <span id="reportMonth" style="font-weight: 600;">--</span>
+                </div>
+                <div class="report-row">
+                    <span>累計上班打卡天數</span>
+                    <span id="reportWorkDays" style="font-weight: 600;">0 天</span>
+                </div>
+                <div class="report-row">
+                    <span>本月底薪設定</span>
+                    <span id="reportBase" style="font-weight: 600;">$37,000</span>
+                </div>
+                <div class="report-row">
+                    <span>勞健保扣除</span>
+                    <span id="reportInsurance" style="font-weight: 600; color: var->danger;">-$850</span>
+                </div>
+                <div class="report-row">
+                    <span>本月預估實領總計</span>
+                    <span id="reportTotal" style="font-weight: 700; color: var(--primary); font-size: 16px;">$36,150</span>
+                </div>
+                <button class="btn-save" style="background: var(--danger); margin-top: 16px; box-shadow: 0 4px 12px rgba(255,59,48,0.3);" onclick="clearPunchData()">清除本月打卡紀錄重新計算</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 註冊 Service Worker 支援 PWA
         if ('serviceWorker' in navigator) {
@@ -267,8 +429,20 @@
             });
         }
 
+        // 讀取本地儲存的設定與打卡資料
+        let appSettings = JSON.parse(localStorage.getItem('salary_settings')) || {
+            baseSalary: 37000,
+            insurance: 850
+        };
+
+        let punchRecords = JSON.parse(localStorage.getItem('salary_records')) || {};
+
+        // 初始化輸入框數值
+        document.getElementById('inputBaseSalary').value = appSettings.baseSalary;
+        document.getElementById('inputInsurance').value = appSettings.insurance;
+
         // 核心時間管理：結合網路 API 時間與手機本地時間補償
-        let timeOffset = 0; // 網路時間與本地時間的毫秒差
+        let timeOffset = 0;
 
         async function syncNetworkTime() {
             try {
@@ -284,55 +458,128 @@
                     throw new Error('API 回應異常');
                 }
             } catch (e) {
-                // 如果聯網失敗，退回使用手機本機時間，並提示
                 timeOffset = 0;
                 document.getElementById('timeSyncIndicator').innerText = '📱 使用手機本地時間';
                 document.getElementById('timeSyncIndicator').style.color = 'var(--warning)';
             }
         }
 
-        // 取得即時校準後的時間
         function getSyncedCurrentDate() {
             return new Date(new Date().getTime() + timeOffset);
         }
 
-        // 每秒更新時鐘與單日日期顯示
+        // 更新畫面 UI
+        function updateUI() {
+            const now = getSyncedCurrentDate();
+            const yearMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const todayKey = `${yearMonthKey}-${String(now.getDate()).padStart(2, '0')}`;
+
+            // 計算本月打卡天數
+            let monthDaysCount = 0;
+            Object.keys(punchRecords).forEach(k => {
+                if (k.startsWith(yearMonthKey)) monthDaysCount++;
+            });
+
+            // 更新介面數值
+            document.getElementById('baseSalaryVal').innerText = `$${appSettings.baseSalary.toLocaleString()}`;
+            document.getElementById('insuranceFeeVal').innerText = `-$${appSettings.insurance.toLocaleString()}`;
+            
+            const estimatedMonthTotal = appSettings.baseSalary - appSettings.insurance;
+            document.getElementById('totalMonthVal').innerText = `$${estimatedMonthTotal.toLocaleString()}`;
+
+            // 更新後台報表
+            document.getElementById('reportMonth').innerText = `${now.getFullYear()}年 ${now.getMonth() + 1}月`;
+            document.getElementById('reportWorkDays').innerText = `${monthDaysCount} 天`;
+            document.getElementById('reportBase').innerText = `$${appSettings.baseSalary.toLocaleString()}`;
+            document.getElementById('reportInsurance').innerText = `-$${appSettings.insurance.toLocaleString()}`;
+            document.getElementById('reportTotal').innerText = `$${estimatedMonthTotal.toLocaleString()}`;
+
+            // 當日打卡狀態更新
+            if (punchRecords[todayKey]) {
+                const record = punchRecords[todayKey];
+                if (record.in && record.out) {
+                    document.getElementById('todayStatusTag').innerText = '已完整打卡';
+                    document.getElementById('todayStatusTag').style.color = 'var(--success)';
+                } else if (record.in) {
+                    document.getElementById('todayStatusTag').innerText = '已上班打卡';
+                    document.getElementById('todayStatusTag').style.color = 'var(--primary)';
+                }
+            } else {
+                document.getElementById('todayStatusTag').innerText = '未打卡';
+                document.getElementById('todayStatusTag').style.color = 'var(--text-sub)';
+            }
+        }
+
+        // 每秒更新時鐘
         setInterval(() => {
             const now = getSyncedCurrentDate();
-            
-            // 頂部時鐘
             document.getElementById('liveClockBadge').innerText = now.toTimeString().split(' ')[0];
-            
-            // 單日完整日期顯示 (例: 📅 2026年8月28日 星期五)
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
-            const dateStr = now.toLocaleDateString('zh-TW', options);
-            document.getElementById('currentTodayText').innerText = '📅 ' + dateStr;
+            document.getElementById('currentTodayText').innerText = '📅 ' + now.toLocaleDateString('zh-TW', options);
             
-            // 更新當日卡片標題帶有日期
             const monthDayStr = (now.getMonth() + 1) + '月' + now.getDate() + '日';
             document.getElementById('todayCardTitle').innerText = `☀️ 當日結算概況 (${monthDayStr})`;
             document.getElementById('monthSummaryTitle').innerText = `📊 ${(now.getMonth() + 1)}月薪資預估總覽`;
         }, 1000);
 
-        // 頁面載入時立即進行第一次聯網對時
         syncNetworkTime();
+        setTimeout(updateUI, 500);
 
+        // 打卡邏輯
         function quickPunch(type) {
             const now = getSyncedCurrentDate();
             const timeString = now.toTimeString().split(' ')[0];
-            if (type === 'in') {
-                alert(`[${timeString}] 上班打卡成功！`);
-                document.getElementById('todayStatusTag').innerText = '已上班';
-                document.getElementById('todayStatusTag').style.color = 'var(--primary)';
-            } else {
-                alert(`[${timeString}] 下班打卡成功！`);
-                document.getElementById('todayStatusTag').innerText = '已下班';
-                document.getElementById('todayStatusTag').style.color = 'var(--success)';
+            const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            if (!punchRecords[todayKey]) {
+                punchRecords[todayKey] = { in: null, out: null };
             }
+
+            if (type === 'in') {
+                punchRecords[todayKey].in = timeString;
+                alert(`[${timeString}] 上班打卡成功！`);
+            } else {
+                punchRecords[todayKey].out = timeString;
+                alert(`[${timeString}] 下班打卡成功！`);
+            }
+
+            localStorage.setItem('salary_records', JSON.stringify(punchRecords));
+            updateUI();
         }
 
+        // 開啟與關閉後台彈窗
         function openAdminPortal() {
-            alert('即將進入後台設定頁面（可在此調整底薪、上班時間、時薪等參數）。');
+            document.getElementById('adminModal').style.display = 'flex';
+            updateUI();
+        }
+
+        function closeAdminPortal() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        // 儲存設定
+        function saveSettings() {
+            const newBase = parseInt(document.getElementById('inputBaseSalary').value) || 0;
+            const newIns = parseInt(document.getElementById('inputInsurance').value) || 0;
+
+            appSettings.baseSalary = newBase;
+            appSettings.insurance = newIns;
+
+            localStorage.setItem('salary_settings', JSON.stringify(appSettings));
+            updateUI();
+            alert('後台薪資與勞健保設定已成功儲存！');
+            closeAdminPortal();
+        }
+
+        // 清除紀錄
+        function clearPunchData() {
+            if (confirm('確定要清除本月的打卡紀錄嗎？')) {
+                punchRecords = {};
+                localStorage.removeItem('salary_records');
+                updateUI();
+                alert('已清空打卡紀錄！');
+                closeAdminPortal();
+            }
         }
     </script>
 </body>
