@@ -37,17 +37,18 @@
         body {
             background-color: var(--bg);
             color: var(--text-main);
+            /* 讓整體畫面往下移，避免卡到手機狀態列、瀏海或動態島 */
+            padding-top: max(env(safe-area-inset-top), 20px);
             padding-bottom: 120px;
         }
 
         header {
             background: var(--card-bg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 16px 16px 12px 16px;
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin: 0 16px 16px 16px;
+            padding: 16px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
         }
 
         .header-title {
@@ -85,6 +86,40 @@
             padding: 2px 6px;
             border-radius: 6px;
             font-weight: normal;
+        }
+
+        /* 每日切換與補登區塊 */
+        .date-switcher-card {
+            background: var(--card-bg);
+            margin: 0 16px 16px 16px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .date-switcher-card input[type="date"] {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .btn-edit-day {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
         }
 
         .punch-actions {
@@ -130,7 +165,6 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            margin-top: 10px;
         }
 
         .stat-box {
@@ -176,15 +210,9 @@
             justify-content: center;
             gap: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            transition: background 0.2s, border-color 0.2s;
         }
 
-        .btn-admin-portal:active {
-            background: var(--bg);
-            border-color: var(--primary);
-        }
-
-        /* 彈出式後台管理面板樣式 */
+        /* 彈出式通用面板樣式 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -313,6 +341,15 @@
         </div>
     </header>
 
+    <!-- 每日切換與補登按鈕區塊 -->
+    <div class="date-switcher-card">
+        <div>
+            <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 2px;">切換檢視/補登日期</div>
+            <input type="date" id="selectedDateInput" onchange="onDateChanged()">
+        </div>
+        <button class="btn-edit-day" onclick="openEditDayModal()">✏️ 補登時間</button>
+    </div>
+
     <div class="punch-actions">
         <button class="btn-punch btn-in" onclick="quickPunch('in')">📍 上班打卡</button>
         <button class="btn-punch btn-out" onclick="quickPunch('out')">🏁 下班打卡</button>
@@ -320,33 +357,25 @@
 
     <!-- 當日結算概況 -->
     <div class="summary-card" style="border: 1.5px solid var(--primary-light);">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <div style="font-size: 14px; font-weight: 700; color: var(--primary);" id="todayCardTitle">☀️ 當日結算概況</div>
-            <div style="font-size: 12px; color: var(--text-sub);" id="todayStatusTag">未打卡</div>
+            <div style="font-size: 12px; color: var(--text-sub); font-weight: 600;" id="todayStatusTag">未打卡</div>
         </div>
         <div class="summary-grid">
             <div class="stat-box">
-                <div class="stat-label">今日預估薪資</div>
-                <div class="stat-val primary" id="todaySalaryVal">$0</div>
+                <div class="stat-label">上班時間</div>
+                <div class="stat-val primary" id="displayInTime">尚未打卡</div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">工時 (正常/加班)</div>
-                <div class="stat-val" id="todayHoursVal">0h / 0h</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">遲到扣款 (-)</div>
-                <div class="stat-val danger" id="todayLateVal">-$0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">加班費累計 (+)</div>
-                <div class="stat-val success" id="todayOtVal">+$0</div>
+                <div class="stat-label">下班時間</div>
+                <div class="stat-val warning" id="displayOutTime" style="color: var(--warning);">尚未打卡</div>
             </div>
         </div>
     </div>
 
     <!-- 本月薪資預估總覽 -->
     <div class="summary-card">
-        <div style="font-size: 14px; font-weight: 700; color: var(--text-sub);" id="monthSummaryTitle">📊 本月薪資預估總覽</div>
+        <div style="font-size: 14px; font-weight: 700; color: var(--text-sub); margin-bottom: 10px;" id="monthSummaryTitle">📊 本月薪資預估總覽</div>
         <div class="summary-grid">
             <div class="stat-box">
                 <div class="stat-label">約定底薪</div>
@@ -357,8 +386,8 @@
                 <div class="stat-val danger" id="insuranceFeeVal">-$850</div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">加班/其他 (+)</div>
-                <div class="stat-val success" id="otFeeVal">$0</div>
+                <div class="stat-label">本月出勤天數</div>
+                <div class="stat-val success" id="monthDaysVal">0 天</div>
             </div>
             <div class="stat-box">
                 <div class="stat-label">本月預估實領</div>
@@ -374,6 +403,25 @@
         </button>
     </div>
 
+    <!-- 補登/修改打卡時間彈出視窗 -->
+    <div class="modal-overlay" id="editDayModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="editModalTitle">✏️ 補登/修改打卡時間</div>
+                <button class="close-modal" onclick="closeEditDayModal()">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">📍 上班時間 (例如 08:55)</label>
+                <input type="time" id="inputInTime" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">🏁 下班時間 (例如 18:05)</label>
+                <input type="time" id="inputOutTime" class="form-input">
+            </div>
+            <button class="btn-save" onclick="saveManualPunch()">儲存該日打卡時間</button>
+        </div>
+    </div>
+
     <!-- 後台管理彈出視窗 (Modal) -->
     <div class="modal-overlay" id="adminModal">
         <div class="modal-content">
@@ -382,7 +430,6 @@
                 <button class="close-modal" onclick="closeAdminPortal()">✕</button>
             </div>
 
-            <!-- 薪資與勞健保自訂設定 -->
             <div class="form-group">
                 <label class="form-label">💰 約定底薪 (NT$)</label>
                 <input type="number" id="inputBaseSalary" class="form-input" value="37000">
@@ -393,7 +440,6 @@
             </div>
             <button class="btn-save" onclick="saveSettings()">儲存薪資與勞健保設定</button>
 
-            <!-- 當月完整報表總覽 -->
             <div class="report-section">
                 <div style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--primary);">📈 當月完整薪資與出勤報表</div>
                 <div class="report-row">
@@ -410,26 +456,24 @@
                 </div>
                 <div class="report-row">
                     <span>勞健保扣除</span>
-                    <span id="reportInsurance" style="font-weight: 600; color: var->danger;">-$850</span>
+                    <span id="reportInsurance" style="font-weight: 600; color: var(--danger);">-$850</span>
                 </div>
                 <div class="report-row">
                     <span>本月預估實領總計</span>
                     <span id="reportTotal" style="font-weight: 700; color: var(--primary); font-size: 16px;">$36,150</span>
                 </div>
-                <button class="btn-save" style="background: var(--danger); margin-top: 16px; box-shadow: 0 4px 12px rgba(255,59,48,0.3);" onclick="clearPunchData()">清除本月打卡紀錄重新計算</button>
+                <button class="btn-save" style="background: var(--danger); margin-top: 16px; box-shadow: 0 4px 12px rgba(255,59,48,0.3);" onclick="clearPunchData()">清除所有打卡紀錄</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 註冊 Service Worker 支援 PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW 註冊失敗:', err));
             });
         }
 
-        // 讀取本地儲存的設定與打卡資料
         let appSettings = JSON.parse(localStorage.getItem('salary_settings')) || {
             baseSalary: 37000,
             insurance: 850
@@ -437,11 +481,9 @@
 
         let punchRecords = JSON.parse(localStorage.getItem('salary_records')) || {};
 
-        // 初始化輸入框數值
         document.getElementById('inputBaseSalary').value = appSettings.baseSalary;
         document.getElementById('inputInsurance').value = appSettings.insurance;
 
-        // 核心時間管理：結合網路 API 時間與手機本地時間補償
         let timeOffset = 0;
 
         async function syncNetworkTime() {
@@ -468,86 +510,140 @@
             return new Date(new Date().getTime() + timeOffset);
         }
 
-        // 更新畫面 UI
-        function updateUI() {
-            const now = getSyncedCurrentDate();
-            const yearMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            const todayKey = `${yearMonthKey}-${String(now.getDate()).padStart(2, '0')}`;
+        // 初始化日期選單預設為今天
+        const todayObj = getSyncedCurrentDate();
+        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+        document.getElementById('selectedDateInput').value = todayStr;
 
-            // 計算本月打卡天數
+        function getSelectedDateKey() {
+            return document.getElementById('selectedDateInput').value || todayStr;
+        }
+
+        function updateUI() {
+            const currentKey = getSelectedDateKey();
+            const parts = currentKey.split('-');
+            const yearMonthKey = `${parts[0]}-${parts[1]}`;
+
+            // 計算本月打卡天數（只要有上班打卡就算一天）
             let monthDaysCount = 0;
             Object.keys(punchRecords).forEach(k => {
-                if (k.startsWith(yearMonthKey)) monthDaysCount++;
+                if (k.startsWith(yearMonthKey) && punchRecords[k] && punchRecords[k].in) {
+                    monthDaysCount++;
+                }
             });
 
-            // 更新介面數值
             document.getElementById('baseSalaryVal').innerText = `$${appSettings.baseSalary.toLocaleString()}`;
             document.getElementById('insuranceFeeVal').innerText = `-$${appSettings.insurance.toLocaleString()}`;
+            document.getElementById('monthDaysVal').innerText = `${monthDaysCount} 天`;
             
             const estimatedMonthTotal = appSettings.baseSalary - appSettings.insurance;
             document.getElementById('totalMonthVal').innerText = `$${estimatedMonthTotal.toLocaleString()}`;
 
             // 更新後台報表
-            document.getElementById('reportMonth').innerText = `${now.getFullYear()}年 ${now.getMonth() + 1}月`;
+            document.getElementById('reportMonth').innerText = `${parts[0]}年 ${parseInt(parts[1])}月`;
             document.getElementById('reportWorkDays').innerText = `${monthDaysCount} 天`;
             document.getElementById('reportBase').innerText = `$${appSettings.baseSalary.toLocaleString()}`;
             document.getElementById('reportInsurance').innerText = `-$${appSettings.insurance.toLocaleString()}`;
             document.getElementById('reportTotal').innerText = `$${estimatedMonthTotal.toLocaleString()}`;
 
-            // 當日打卡狀態更新
-            if (punchRecords[todayKey]) {
-                const record = punchRecords[todayKey];
+            // 更新當日打卡狀態與顯示時間
+            const record = punchRecords[currentKey];
+            if (record) {
+                document.getElementById('displayInTime').innerText = record.in || '尚未打卡';
+                document.getElementById('displayOutTime').innerText = record.out || '尚未打卡';
                 if (record.in && record.out) {
                     document.getElementById('todayStatusTag').innerText = '已完整打卡';
                     document.getElementById('todayStatusTag').style.color = 'var(--success)';
                 } else if (record.in) {
                     document.getElementById('todayStatusTag').innerText = '已上班打卡';
                     document.getElementById('todayStatusTag').style.color = 'var(--primary)';
+                } else {
+                    document.getElementById('todayStatusTag').innerText = '未打卡';
+                    document.getElementById('todayStatusTag').style.color = 'var(--text-sub)';
                 }
             } else {
+                document.getElementById('displayInTime').innerText = '尚未打卡';
+                document.getElementById('displayOutTime').innerText = '尚未打卡';
                 document.getElementById('todayStatusTag').innerText = '未打卡';
                 document.getElementById('todayStatusTag').style.color = 'var(--text-sub)';
             }
+
+            document.getElementById('todayCardTitle').innerText = `☀️ ${parts[1]}月${parts[2]}日 打卡概況`;
+            document.getElementById('monthSummaryTitle').innerText = `📊 ${parseInt(parts[1])}月薪資預估總覽`;
         }
 
-        // 每秒更新時鐘
+        function onDateChanged() {
+            updateUI();
+        }
+
+        // 每秒更新即時時鐘
         setInterval(() => {
             const now = getSyncedCurrentDate();
             document.getElementById('liveClockBadge').innerText = now.toTimeString().split(' ')[0];
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
             document.getElementById('currentTodayText').innerText = '📅 ' + now.toLocaleDateString('zh-TW', options);
-            
-            const monthDayStr = (now.getMonth() + 1) + '月' + now.getDate() + '日';
-            document.getElementById('todayCardTitle').innerText = `☀️ 當日結算概況 (${monthDayStr})`;
-            document.getElementById('monthSummaryTitle').innerText = `📊 ${(now.getMonth() + 1)}月薪資預估總覽`;
         }, 1000);
 
         syncNetworkTime();
         setTimeout(updateUI, 500);
 
-        // 打卡邏輯
+        // 快捷打卡（針對目前選中的日期）
         function quickPunch(type) {
             const now = getSyncedCurrentDate();
-            const timeString = now.toTimeString().split(' ')[0];
-            const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const timeString = now.toTimeString().split(' ')[0].substring(0, 5); // 取得 HH:MM
+            const currentKey = getSelectedDateKey();
 
-            if (!punchRecords[todayKey]) {
-                punchRecords[todayKey] = { in: null, out: null };
+            if (!punchRecords[currentKey]) {
+                punchRecords[currentKey] = { in: null, out: null };
             }
 
             if (type === 'in') {
-                punchRecords[todayKey].in = timeString;
-                alert(`[${timeString}] 上班打卡成功！`);
+                punchRecords[currentKey].in = timeString;
+                alert(`[${currentKey}] 上班打卡記錄為 ${timeString}`);
             } else {
-                punchRecords[todayKey].out = timeString;
-                alert(`[${timeString}] 下班打卡成功！`);
+                punchRecords[currentKey].out = timeString;
+                alert(`[${currentKey}] 下班打卡記錄為 ${timeString}`);
             }
 
             localStorage.setItem('salary_records', JSON.stringify(punchRecords));
             updateUI();
         }
 
-        // 開啟與關閉後台彈窗
+        // 開啟補登/修改時間視窗
+        function openEditDayModal() {
+            const currentKey = getSelectedDateKey();
+            document.getElementById('editModalTitle').innerText = `✏️ 補登/修改 (${currentKey})`;
+            
+            const record = punchRecords[currentKey] || { in: '', out: '' };
+            document.getElementById('inputInTime').value = record.in || '';
+            document.getElementById('inputOutTime').value = record.out || '';
+
+            document.getElementById('editDayModal').style.display = 'flex';
+        }
+
+        function closeEditDayModal() {
+            document.getElementById('editDayModal').style.display = 'none';
+        }
+
+        function saveManualPunch() {
+            const currentKey = getSelectedDateKey();
+            const inVal = document.getElementById('inputInTime').value;
+            const outVal = document.getElementById('inputOutTime').value;
+
+            if (!punchRecords[currentKey]) {
+                punchRecords[currentKey] = { in: null, out: null };
+            }
+
+            punchRecords[currentKey].in = inVal || null;
+            punchRecords[currentKey].out = outVal || null;
+
+            localStorage.setItem('salary_records', JSON.stringify(punchRecords));
+            updateUI();
+            alert(`已成功更新 ${currentKey} 的打卡時間！`);
+            closeEditDayModal();
+        }
+
+        // 後台管理視窗
         function openAdminPortal() {
             document.getElementById('adminModal').style.display = 'flex';
             updateUI();
@@ -557,7 +653,6 @@
             document.getElementById('adminModal').style.display = 'none';
         }
 
-        // 儲存設定
         function saveSettings() {
             const newBase = parseInt(document.getElementById('inputBaseSalary').value) || 0;
             const newIns = parseInt(document.getElementById('inputInsurance').value) || 0;
@@ -571,13 +666,12 @@
             closeAdminPortal();
         }
 
-        // 清除紀錄
         function clearPunchData() {
-            if (confirm('確定要清除本月的打卡紀錄嗎？')) {
+            if (confirm('確定要清除所有打卡紀錄嗎？')) {
                 punchRecords = {};
                 localStorage.removeItem('salary_records');
                 updateUI();
-                alert('已清空打卡紀錄！');
+                alert('已清空所有打卡紀錄！');
                 closeAdminPortal();
             }
         }
