@@ -70,12 +70,21 @@
 
         .sub-header {
             margin-top: 8px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--primary);
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .time-sync-status {
+            font-size: 11px;
+            color: var(--success);
+            background: rgba(52, 199, 89, 0.1);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: normal;
         }
 
         .punch-actions {
@@ -139,11 +148,41 @@
         .stat-val {
             font-size: 17px;
             font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
 
         .stat-val.primary { color: var(--primary); }
         .stat-val.danger { color: var(--danger); }
         .stat-val.success { color: var(--success); }
+
+        /* 最下方後台管理按鍵區塊 */
+        .footer-action-container {
+            margin: 24px 16px;
+            text-align: center;
+        }
+
+        .btn-admin-portal {
+            width: 100%;
+            padding: 16px;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn-admin-portal:active {
+            background: var(--bg);
+            border-color: var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -151,11 +190,11 @@
     <header>
         <div class="header-title">
             <span>⏱️ 薪資打卡助手</span>
-            <span class="badge" id="liveClockBadge">--:--:--</span>
+            <span class="badge" id="liveClockBadge">聯網對時中...</span>
         </div>
         <div class="sub-header">
-            <span id="currentTodayText">📅 今日日期載入中...</span>
-            <span style="font-size: 12px; color: var(--text-sub);" id="currentMonthBadge"></span>
+            <span id="currentTodayText">📅 讀取日期中...</span>
+            <span class="time-sync-status" id="timeSyncIndicator">🌐 聯網時間校準</span>
         </div>
     </header>
 
@@ -167,7 +206,7 @@
     <!-- 當日結算概況 -->
     <div class="summary-card" style="border: 1.5px solid var(--primary-light);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-size: 14px; font-weight: 700; color: var(--primary);">☀️ 當日結算概況</div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--primary);" id="todayCardTitle">☀️ 當日結算概況</div>
             <div style="font-size: 12px; color: var(--text-sub);" id="todayStatusTag">未打卡</div>
         </div>
         <div class="summary-grid">
@@ -190,9 +229,9 @@
         </div>
     </div>
 
-    <!-- 本月薪資預估總覽 (已補齊所有欄位) -->
+    <!-- 本月薪資預估總覽 -->
     <div class="summary-card">
-        <div style="font-size: 14px; font-weight: 700; color: var(--text-sub);">📊 本月薪資預估總覽</div>
+        <div style="font-size: 14px; font-weight: 700; color: var(--text-sub);" id="monthSummaryTitle">📊 本月薪資預估總覽</div>
         <div class="summary-grid">
             <div class="stat-box">
                 <div class="stat-label">約定底薪</div>
@@ -213,25 +252,87 @@
         </div>
     </div>
 
+    <!-- 最下方切換後台管理的按鍵 -->
+    <div class="footer-action-container">
+        <button class="btn-admin-portal" onclick="openAdminPortal()">
+            ⚙️ 後台設定與薪資參數管理
+        </button>
+    </div>
+
     <script>
-        // 註冊 Service Worker
+        // 註冊 Service Worker 支援 PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW 註冊失敗:', err));
             });
         }
 
-        // 即時時鐘與日期更新
+        // 核心時間管理：結合網路 API 時間與手機本地時間補償
+        let timeOffset = 0; // 網路時間與本地時間的毫秒差
+
+        async function syncNetworkTime() {
+            try {
+                const response = await fetch('https://worldtimeapi.org/api/timezone/Asia/Taipei', { cache: 'no-store' });
+                if (response.ok) {
+                    const data = await response.json();
+                    const serverTime = new Date(data.datetime).getTime();
+                    const localTime = new Date().getTime();
+                    timeOffset = serverTime - localTime;
+                    document.getElementById('timeSyncIndicator').innerText = '🌐 聯網校準成功';
+                    document.getElementById('timeSyncIndicator').style.color = 'var(--success)';
+                } else {
+                    throw new Error('API 回應異常');
+                }
+            } catch (e) {
+                // 如果聯網失敗，退回使用手機本機時間，並提示
+                timeOffset = 0;
+                document.getElementById('timeSyncIndicator').innerText = '📱 使用手機本地時間';
+                document.getElementById('timeSyncIndicator').style.color = 'var(--warning)';
+            }
+        }
+
+        // 取得即時校準後的時間
+        function getSyncedCurrentDate() {
+            return new Date(new Date().getTime() + timeOffset);
+        }
+
+        // 每秒更新時鐘與單日日期顯示
         setInterval(() => {
-            const now = new Date();
+            const now = getSyncedCurrentDate();
+            
+            // 頂部時鐘
             document.getElementById('liveClockBadge').innerText = now.toTimeString().split(' ')[0];
+            
+            // 單日完整日期顯示 (例: 📅 2026年8月28日 星期五)
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
-            document.getElementById('currentTodayText').innerText = '📅 ' + now.toLocaleDateString('zh-TW', options);
-            document.getElementById('currentMonthBadge').innerText = (now.getMonth() + 1) + '月薪資結算';
+            const dateStr = now.toLocaleDateString('zh-TW', options);
+            document.getElementById('currentTodayText').innerText = '📅 ' + dateStr;
+            
+            // 更新當日卡片標題帶有日期
+            const monthDayStr = (now.getMonth() + 1) + '月' + now.getDate() + '日';
+            document.getElementById('todayCardTitle').innerText = `☀️ 當日結算概況 (${monthDayStr})`;
+            document.getElementById('monthSummaryTitle').innerText = `📊 ${(now.getMonth() + 1)}月薪資預估總覽`;
         }, 1000);
 
+        // 頁面載入時立即進行第一次聯網對時
+        syncNetworkTime();
+
         function quickPunch(type) {
-            alert(type === 'in' ? '已成功記錄上班打卡！' : '已成功記錄下班打卡！');
+            const now = getSyncedCurrentDate();
+            const timeString = now.toTimeString().split(' ')[0];
+            if (type === 'in') {
+                alert(`[${timeString}] 上班打卡成功！`);
+                document.getElementById('todayStatusTag').innerText = '已上班';
+                document.getElementById('todayStatusTag').style.color = 'var(--primary)';
+            } else {
+                alert(`[${timeString}] 下班打卡成功！`);
+                document.getElementById('todayStatusTag').innerText = '已下班';
+                document.getElementById('todayStatusTag').style.color = 'var(--success)';
+            }
+        }
+
+        function openAdminPortal() {
+            alert('即將進入後台設定頁面（可在此調整底薪、上班時間、時薪等參數）。');
         }
     </script>
 </body>
