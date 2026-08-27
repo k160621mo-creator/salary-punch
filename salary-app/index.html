@@ -164,6 +164,7 @@
         <button class="btn-punch btn-out" onclick="quickPunch('out')">🏁 下班打卡</button>
     </div>
 
+    <!-- 當日結算概況 -->
     <div class="summary-card" style="border: 1.5px solid var(--primary-light);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="font-size: 14px; font-weight: 700; color: var(--primary);">☀️ 當日結算概況</div>
@@ -189,6 +190,7 @@
         </div>
     </div>
 
+    <!-- 本月薪資預估總覽 (已補齊所有欄位) -->
     <div class="summary-card">
         <div style="font-size: 14px; font-weight: 700; color: var(--text-sub);">📊 本月薪資預估總覽</div>
         <div class="summary-grid">
@@ -204,6 +206,10 @@
                 <div class="stat-label">遲到扣款 (-)</div>
                 <div class="stat-val danger" id="lateFeeVal">-$0</div>
             </div>
+            <div class="stat-box">
+                <div class="stat-label">本月預估實領</div>
+                <div class="stat-val primary" id="totalMonthVal">$37,000</div>
+            </div>
         </div>
     </div>
 
@@ -211,16 +217,17 @@
         // 註冊 Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker 註冊成功:', reg.scope))
-                    .catch(err => console.log('Service Worker 註冊失敗:', err));
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW 註冊失敗:', err));
             });
         }
 
-        // 即時時鐘範例
+        // 即時時鐘與日期更新
         setInterval(() => {
             const now = new Date();
             document.getElementById('liveClockBadge').innerText = now.toTimeString().split(' ')[0];
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
+            document.getElementById('currentTodayText').innerText = '📅 ' + now.toLocaleDateString('zh-TW', options);
+            document.getElementById('currentMonthBadge').innerText = (now.getMonth() + 1) + '月薪資結算';
         }, 1000);
 
         function quickPunch(type) {
