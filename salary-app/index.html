@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>薪資打卡助手</title>
+    
+    <!-- PWA 必備標籤 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="打卡助手">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <style>
+        :root {
+            --primary: #007AFF;
+            --primary-light: #E5F1FF;
+            --bg: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --text-main: #1C1C1E;
+            --text-sub: #8E8E93;
+            --danger: #FF3B30;
+            --success: #34C759;
+            --warning: #FF9500;
+            --border: #E5E5EA;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding-bottom: 120px;
+        }
+
+        header {
+            background: var(--card-bg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 16px 16px 12px 16px;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            font-size: 13px;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sub-header {
+            margin-top: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .punch-actions {
+            display: flex;
+            gap: 12px;
+            margin: 16px;
+        }
+
+        .btn-punch {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            transition: transform 0.1s, opacity 0.1s;
+        }
+
+        .btn-punch:active {
+            transform: scale(0.96);
+            opacity: 0.9;
+        }
+
+        .btn-in { background: var(--primary); }
+        .btn-out { background: var(--warning); }
+
+        .summary-card {
+            background: var(--card-bg);
+            margin: 0 16px 16px 16px;
+            padding: 16px;
+            border-radius: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+        }
+
+        .stat-val {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .stat-val.primary { color: var(--primary); }
+        .stat-val.danger { color: var(--danger); }
+        .stat-val.success { color: var(--success); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <span>⏱️ 薪資打卡助手</span>
+            <span class="badge" id="liveClockBadge">--:--:--</span>
+        </div>
+        <div class="sub-header">
+            <span id="currentTodayText">📅 今日日期載入中...</span>
+            <span style="font-size: 12px; color: var(--text-sub);" id="currentMonthBadge"></span>
+        </div>
+    </header>
+
+    <div class="punch-actions">
+        <button class="btn-punch btn-in" onclick="quickPunch('in')">📍 上班打卡</button>
+        <button class="btn-punch btn-out" onclick="quickPunch('out')">🏁 下班打卡</button>
+    </div>
+
+    <div class="summary-card" style="border: 1.5px solid var(--primary-light);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 14px; font-weight: 700; color: var(--primary);">☀️ 當日結算概況</div>
+            <div style="font-size: 12px; color: var(--text-sub);" id="todayStatusTag">未打卡</div>
+        </div>
+        <div class="summary-grid">
+            <div class="stat-box">
+                <div class="stat-label">今日預估薪資</div>
+                <div class="stat-val primary" id="todaySalaryVal">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">工時 (正常/加班)</div>
+                <div class="stat-val" id="todayHoursVal">0h / 0h</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">遲到扣款 (-)</div>
+                <div class="stat-val danger" id="todayLateVal">-$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">加班費累計 (+)</div>
+                <div class="stat-val success" id="todayOtVal">+$0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div style="font-size: 14px; font-weight: 700; color: var(--text-sub);">📊 本月薪資預估總覽</div>
+        <div class="summary-grid">
+            <div class="stat-box">
+                <div class="stat-label">約定底薪</div>
+                <div class="stat-val" id="baseSalaryVal">$37,000</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">加班費累計 (+)</div>
+                <div class="stat-val success" id="otFeeVal">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">遲到扣款 (-)</div>
+                <div class="stat-val danger" id="lateFeeVal">-$0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 註冊 Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker 註冊成功:', reg.scope))
+                    .catch(err => console.log('Service Worker 註冊失敗:', err));
+            });
+        }
+
+        // 即時時鐘範例
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('liveClockBadge').innerText = now.toTimeString().split(' ')[0];
+        }, 1000);
+
+        function quickPunch(type) {
+            alert(type === 'in' ? '已成功記錄上班打卡！' : '已成功記錄下班打卡！');
+        }
+    </script>
+</body>
+</html>
