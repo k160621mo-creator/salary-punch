@@ -97,9 +97,6 @@
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
             box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
         }
         .btn-reload:active {
@@ -423,9 +420,9 @@
         <div class="header-title">
             <span>⚡ CYBERPUNCH v5.0</span>
             <div class="header-right-actions">
-                <!-- 🔄 新增：取消讀取/重新整理按鈕 -->
+                <!-- 🔄 修改：僅保留四個字「取消讀取」 -->
                 <button class="btn-reload" onclick="window.location.reload()">
-                    🔄 取消讀取
+                    取消讀取
                 </button>
                 <span class="badge" id="liveClockBadge">--:--:--</span>
             </div>
@@ -512,7 +509,6 @@
             <span style="font-weight: 900; font-size: 22px; color: var(--neon-blue); text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);" id="netSalaryVal">$0</span>
         </div>
 
-        <!-- 💡 算式明細區塊 -->
         <div class="formula-box" id="formulaDetailBox">
             <b>💡 薪資算式拆解：</b><br>
             • 標準時薪 = 底薪 $37,000 ÷ 240 小時 = $154.17/小時<br>
@@ -522,7 +518,6 @@
         </div>
     </div>
 
-    <!-- 📈 年度總計統計看板 -->
     <div class="summary-card" style="border: 1px solid rgba(189, 0, 255, 0.4); box-shadow: 0 0 20px rgba(189, 0, 255, 0.1);">
         <div style="font-size: 14px; font-weight: 800; color: var(--neon-purple); margin-bottom: 8px;">📈 2026 年度累計總結算 (自動統計)</div>
         <div class="summary-grid">
