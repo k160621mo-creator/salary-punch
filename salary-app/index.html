@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Black-Gold 奢華黑金薪資打卡助手 v5.3</title>
+    <title>Black-Gold 奢華黑金薪資打卡助手 v5.4</title>
 
     <!-- PWA / iOS Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -304,7 +304,7 @@
 
         .day-summary {
             text-align: right;
-            min-width: 70px;
+            min-width: 85px;
         }
 
         .sub-tag {
@@ -400,10 +400,10 @@
 
     <header>
         <div class="header-title">
-            <span>🪙 LUX-PUNCH v5.3</span>
+            <span>🪙 LUX-PUNCH v5.4</span>
             <div class="header-right-actions">
                 <button class="btn-reload" onclick="window.location.reload()">
-                    取消讀取
+                    重整畫面
                 </button>
                 <span class="badge" id="liveClockBadge">--:--:--</span>
             </div>
@@ -609,7 +609,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'lux-punch-v11';
+                    const CACHE_NAME = 'lux-punch-v12';
                     self.addEventListener('install', (e) => {
                         e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
                     });
@@ -759,6 +759,7 @@
             const year = now.getFullYear();
             const month = now.getMonth() + 1;
             const todayD = now.getDate();
+            const todayDateStr = `${year}-${String(month).padStart(2, '0')}-${String(todayD).padStart(2, '0')}`;
 
             document.getElementById('currentMonthBadge').textContent = `${year}年${month}月帳務`;
             document.getElementById('bottomListMonthTitle').textContent = `${year}年${month}月結算`;
@@ -783,7 +784,7 @@
                 let dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 let dateObj = new Date(year, month - 1, d);
                 let dayOfWeek = weekdays[dateObj.getDay()];
-                let isToday = (d === todayD);
+                let isToday = (dateStr === todayDateStr);
                 let holidayName = nationalHolidays2026[dateStr] || null;
 
                 let dayData = attendance[dateStr] || { in: '', out: '' };
@@ -797,7 +798,7 @@
                     totalDaysWorked++;
                     totalWorkedHours += isClassShift ? 7 : 8;
 
-                    // 計算當天遲到分鐘與扣款：遲到扣款 = 遲到分鐘數 × (時薪 ÷ 60)
+                    // 確保精確計算遲到分鐘與扣款：遲到扣款 = 遲到分鐘數 × (時薪 ÷ 60)
                     let [h, m] = dayData.in.split(':').map(Number);
                     let [sh, sm] = stdInTime.split(':').map(Number);
                     let inMins = h * 60 + m;
@@ -876,9 +877,20 @@
                 }
             }
 
-            if (isToday) {
-                document.getElementById('todayHoursVal').textContent = `${todayNormalHours}h / ${todayOtHours}h`;
-                document.getElementById('todayLateVal').textContent = `-$${todayLateFee}`;
+            if (showFullMonth) {
+                let todayData = attendance[todayDateStr] || { in: '', out: '' };
+                let todayLateMins = 0;
+                if (todayData.in) {
+                    let [h, m] = todayData.in.split(':').map(Number);
+                    let isClass = todayData.in.startsWith('09:');
+                    let sTime = isClass ? '09:30' : config.workStart;
+                    let [sh, sm] = sTime.split(':').map(Number);
+                    let inMins = h * 60 + m;
+                    let startMins = sh * 60 + sm;
+                    if (inMins > startMins) todayLateMins = inMins - startMins;
+                }
+                document.getElementById('todayHoursVal').textContent = `${todayData.out ? (todayData.in.startsWith('09:') ? 7 : 8) : 0}h / ${todayOtHours}h`;
+                document.getElementById('todayLateVal').textContent = `-$${todayLateMins > 0 ? Math.round(todayLateMins * (hourlyRate / 60)) : 0}`;
                 document.getElementById('todayOtVal').textContent = `+$${todayOtFee}`;
             }
 
@@ -903,7 +915,7 @@
             document.getElementById('formulaDetailBox').innerHTML = `
                 <b>💡 本月薪資算式拆解：</b><br>
                 • 標準時薪 = 底薪 $${Number(config.baseSalary).toLocaleString()} ÷ 240 = $${hourlyRate.toFixed(2)}/小時<br>
-                • 遲到扣款 = ${totalLateMinutes} 分鐘 × ($${hourlyRate.toFixed(2)} ÷ 60) = -$${Math.round(totalLateFee)}<br>
+                • 遲到扣款 = 總計 ${totalLateMinutes} 分鐘 × ($${hourlyRate.toFixed(2)} ÷ 60) = -$${Math.round(totalLateFee)}<br>
                 • 加班費 = ${totalOvertimeHours} 小時 × $${hourlyRate.toFixed(2)} × ${config.otRate} = +$${Math.round(totalOTFee)}<br>
                 • 實領薪資 = $${Number(config.baseSalary).toLocaleString()} (底薪) + $${Math.round(totalOTFee)} (加班) - $${Math.round(totalLateFee)} (遲到) - $${totalInsurance} (勞健保) = <b>$${netSalary.toLocaleString()}</b>
             `;
@@ -967,7 +979,7 @@
             const dateStr = `${year}-${month}-${day}`;
             const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-            if (!attendance[dateStr]) attendance[dateStr] = { in: '', out: '' };
+            if (!attendance[dateStr]) attendance[dateStr] = { in: '', out: {} };
             attendance[dateStr][type] = timeStr;
 
             localStorage.setItem('lux_salary_attendance', JSON.stringify(attendance));
@@ -1028,7 +1040,7 @@
             document.getElementById('cfgLabor').value = config.laborInsurance;
             document.getElementById('cfgHealth').value = config.healthInsurance;
             document.getElementById('cfgWorkStart').value = config.workStart;
-            document.getElementById('cfgWorkEnd').value = config.workEnd;
+            document.getElementById('cfgWorkEnd').value, document.getElementById('cfgWorkEnd').value = config.workEnd;
             document.getElementById('cfgOTRate').value = config.otRate;
             document.getElementById('adminModal').classList.add('active');
         }
