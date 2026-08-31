@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cyberpunk 薪資打卡助手</title>
+    <title>Cyberpunk 薪資打卡助手 v5.0</title>
 
     <!-- PWA / iOS Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,9 +15,6 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2300F2FE'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='%230B0F19'>⚡</text></svg>">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2300F2FE'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='%230B0F19'>⚡</text></svg>">
 
-    <!-- PWA Manifest Inline Data URI -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Cyberpunk 薪資打卡","short_name":"打卡助手","start_url":".","display":"standalone","background_color":"#0B0F19","theme_color":"#0B0F19","icons":[{"src":"data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><rect width=\"100\" height=\"100\" rx=\"22\" fill=\"%2300F2FE\"/><text x=\"50\" y=\"68\" font-size=\"55\" text-anchor=\"middle\" fill=\"%230B0F19\">⚡</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
-
     <style>
         :root {
             --bg-dark: #0B0F19;
@@ -28,6 +25,7 @@
             --neon-pink: #FF007F;
             --neon-green: #00FF66;
             --neon-orange: #FF9900;
+            --neon-purple: #BD00FF;
             --text-main: #F8FAFC;
             --text-sub: #94A3B8;
         }
@@ -130,7 +128,6 @@
             box-shadow: 0 0 15px rgba(255, 153, 0, 0.4);
         }
 
-        /* 📸 賽博風格上傳卡片 */
         .upload-card {
             background: var(--card-bg);
             margin: 0 16px 16px 16px;
@@ -147,6 +144,28 @@
         }
 
         input[type="file"] { display: none; }
+
+        /* 🔥 血汗指數動態評分卡 */
+        .burnout-card {
+            background: var(--card-bg);
+            margin: 0 16px 16px 16px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .burnout-info .title { font-size: 11px; color: var(--text-sub); font-weight: 700; }
+        .burnout-info .status { font-size: 15px; font-weight: 900; margin-top: 2px; }
+        .burnout-badge {
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
 
         .summary-card {
             background: var(--card-bg);
@@ -202,7 +221,6 @@
         .stat-val.danger { color: var(--neon-pink); text-shadow: 0 0 10px rgba(255, 0, 127, 0.3); }
         .stat-val.success { color: var(--neon-green); text-shadow: 0 0 10px rgba(0, 255, 102, 0.3); }
 
-        /* 🔥 高頻率極速跳動發光呼吸燈 */
         @keyframes cyberPulse {
             0% { opacity: 1; transform: scale(1); text-shadow: 0 0 12px rgba(0, 242, 254, 0.6); }
             50% { opacity: 0.85; transform: scale(1.01); text-shadow: 0 0 20px rgba(0, 242, 254, 0.9); }
@@ -272,7 +290,7 @@
 
         .day-summary {
             text-align: right;
-            min-width: 60px;
+            min-width: 70px;
         }
 
         .sub-tag {
@@ -286,6 +304,7 @@
 
         .tag-late { background: rgba(255, 0, 127, 0.15); color: var(--neon-pink); border: 1px solid rgba(255, 0, 127, 0.3); }
         .tag-ot { background: rgba(0, 255, 102, 0.15); color: var(--neon-green); border: 1px solid rgba(0, 255, 102, 0.3); }
+        .tag-holiday { background: rgba(189, 0, 255, 0.15); color: var(--neon-purple); border: 1px solid rgba(189, 0, 255, 0.3); }
 
         .bottom-bar {
             position: fixed;
@@ -298,18 +317,18 @@
             border-top: 1px solid var(--card-border);
             padding: 10px 16px calc(env(safe-area-inset-bottom) + 12px) 16px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             z-index: 100;
         }
 
         .btn-bottom {
             flex: 1;
-            padding: 12px;
+            padding: 12px 6px;
             background: var(--bg-dark);
             color: var(--text-main);
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -323,6 +342,12 @@
             color: var(--neon-blue);
             border-color: rgba(0, 242, 254, 0.5);
             box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        .btn-bottom.action-export {
+            background: rgba(0, 255, 102, 0.15);
+            color: var(--neon-green);
+            border-color: rgba(0, 255, 102, 0.4);
         }
 
         .modal {
@@ -361,7 +386,7 @@
 
     <header>
         <div class="header-title">
-            <span>⚡ CYBERPUNCH v4.2</span>
+            <span>⚡ CYBERPUNCH v5.0</span>
             <span class="badge" id="liveClockBadge">--:--:--</span>
         </div>
         <div class="sub-header">
@@ -373,6 +398,15 @@
     <div class="punch-actions">
         <button class="btn-punch btn-in" onclick="quickPunch('in')">上班</button>
         <button class="btn-punch btn-out" onclick="quickPunch('out')">下班</button>
+    </div>
+
+    <!-- 🔥 血汗指數動態評分卡 -->
+    <div class="burnout-card" id="burnoutCard">
+        <div class="burnout-info">
+            <div class="title">⚡ 精神狀態與血汗指數 (Burnout Index)</div>
+            <div class="status" id="burnoutStatusText">分析運算中...</div>
+        </div>
+        <div class="burnout-badge" id="burnoutBadgeTag">NORMAL</div>
     </div>
 
     <!-- 📸 支援相簿與拍照上傳卡片 -->
@@ -446,10 +480,13 @@
 
     <div class="bottom-bar">
         <button class="btn-bottom" id="btnToggleView" onclick="toggleViewMode()">
-            <span id="toggleIcon">🗓️</span> <span id="toggleText">切換全月總覽</span>
+            <span id="toggleIcon">🗓️</span> <span id="toggleText">全月總覽</span>
+        </button>
+        <button class="btn-bottom action-export" onclick="exportCSV()">
+            📥 匯出CSV
         </button>
         <button class="btn-bottom" onclick="openAdmin()">
-            ⚙️ 系統設定
+            ⚙️ 設定
         </button>
     </div>
 
@@ -473,7 +510,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'cyber-punch-v5';
+                    const CACHE_NAME = 'cyber-punch-v6';
                     self.addEventListener('install', (e) => {
                         e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
                     });
@@ -494,6 +531,22 @@
             workStart: '13:00',
             workEnd: '22:00',
             otRate: 1.33
+        };
+
+        // 📅 行政院人事行政總處：國定假日與民俗節日資料庫模擬 (支援 2026 年)
+        const nationalHolidays2026 = {
+            "2026-01-01": "元旦",
+            "2026-02-16": "農曆春節",
+            "2026-02-17": "農曆春節",
+            "2026-02-18": "農曆春節",
+            "2026-02-19": "農曆春節",
+            "2026-02-20": "農曆春節",
+            "2026-02-28": "和平紀念日",
+            "2026-04-04": "兒童節",
+            "2026-04-05": "民族掃墓節",
+            "2026-06-19": "端午節",
+            "2026-09-25": "中秋節",
+            "2026-10-10": "國慶日"
         };
 
         let defaultAugustData = {
@@ -539,8 +592,6 @@
             }
             updateClock();
             setInterval(updateClock, 1000);
-
-            // ⚡ 0.1秒高頻薪資跳動引擎
             setInterval(updateLiveEarningHighFreq, 100);
         }
 
@@ -591,12 +642,12 @@
             const btn = document.getElementById('btnToggleView');
             if (showFullMonth) {
                 btn.classList.add('active');
-                document.getElementById('toggleText').textContent = '只看當日畫面';
+                document.getElementById('toggleText').textContent = '只看當日';
                 document.getElementById('toggleIcon').textContent = '☀️';
-                document.getElementById('listTitle').textContent = '📋 本月全月明細';
+                document.getElementById('listTitle').textContent = '📋 本月全月出勤與國定/特休明細';
             } else {
                 btn.classList.remove('active');
-                document.getElementById('toggleText').textContent = '切換全月總覽';
+                document.getElementById('toggleText').textContent = '全月總覽';
                 document.getElementById('toggleIcon').textContent = '🗓️';
                 document.getElementById('listTitle').textContent = '📅 今日打卡紀錄';
             }
@@ -617,6 +668,10 @@
 
             let totalOTFee = 0;
             let totalLateFee = 0;
+            let totalOvertimeHours = 0;
+            let totalLateMinutes = 0;
+            let totalDaysWorked = 0;
+
             let hourlyRate = config.baseSalary / 240;
             const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -627,6 +682,7 @@
                 let dateObj = new Date(year, month - 1, d);
                 let dayOfWeek = weekdays[dateObj.getDay()];
                 let isToday = (d === todayD);
+                let holidayName = nationalHolidays2026[dateStr] || null;
 
                 let dayData = attendance[dateStr] || { in: '', out: '' };
                 let lateMins = 0, lateFee = 0, otHours = 0, otFee = 0;
@@ -636,6 +692,7 @@
                 let stdOutTime = isClassShift ? '16:30' : config.workEnd;
 
                 if (dayData.in) {
+                    totalDaysWorked++;
                     let [h, m] = dayData.in.split(':').map(Number);
                     let [sh, sm] = stdInTime.split(':').map(Number);
                     let inMins = h * 60 + m;
@@ -643,6 +700,7 @@
                     if (inMins > startMins) {
                         lateMins = inMins - startMins;
                         lateFee = lateMins * (hourlyRate / 60);
+                        totalLateMinutes += lateMins;
                     }
                 }
 
@@ -655,7 +713,10 @@
                         let diffMins = outMins - endMins;
                         if (diffMins >= 30) {
                             otHours = Math.floor(diffMins / 30) * 0.5;
-                            otFee = otHours * hourlyRate * config.otRate;
+                            // 若當天為國定假日，加班費率自動加倍 (2.0x)
+                            let currentRate = holidayName ? 2.0 : config.otRate;
+                            otFee = otHours * hourlyRate * currentRate;
+                            totalOvertimeHours += otHours;
                         }
                     }
                 }
@@ -697,9 +758,10 @@
                             </div>
                         </div>
                         <div class="day-summary">
+                            ${holidayName ? `<div class="sub-tag tag-holiday">${holidayName}</div><br>` : ''}
                             ${lateMins > 0 ? `<div class="sub-tag tag-late">遲 ${lateMins}分 (-$${Math.round(lateFee)})</div><br>` : ''}
                             ${otHours > 0 ? `<div class="sub-tag tag-ot">加 ${otHours}h (+$${Math.round(otFee)})</div>` : ''}
-                            ${lateMins === 0 && otHours === 0 && dayData.in ? `<span style="font-size:12px; color:var(--neon-green);">正常</span>` : ''}
+                            ${lateMins === 0 && otHours === 0 && !holidayName && dayData.in ? `<span style="font-size:12px; color:var(--neon-green);">正常</span>` : ''}
                             ${!dayData.in ? `<span style="font-size:12px; color:var(--text-sub);">-</span>` : ''}
                         </div>
                     `;
@@ -719,6 +781,82 @@
             document.getElementById('lateFeeVal').textContent = '-$' + Math.round(totalLateFee).toLocaleString();
             document.getElementById('insuranceFeeVal').textContent = '-$' + totalInsurance.toLocaleString();
             document.getElementById('netSalaryVal').textContent = '$' + netSalary.toLocaleString();
+
+            // 🔥 計算與更新血汗指數 (Burnout Index)
+            updateBurnoutIndex(totalOvertimeHours, totalLateMinutes, totalDaysWorked);
+        }
+
+        function updateBurnoutIndex(otHours, lateMins, daysWorked) {
+            const statusText = document.getElementById('burnoutStatusText');
+            const badgeTag = document.getElementById('burnoutBadgeTag');
+            const card = document.getElementById('burnoutCard');
+
+            let score = (otHours * 2) - (lateMins * 0.5) + (daysWorked * 0.5);
+
+            if (score > 40) {
+                statusText.textContent = "🔥 極度過勞 (Cyber-Zombie 狀態)";
+                statusText.style.color = "var(--neon-pink)";
+                badgeTag.textContent = "CRITICAL";
+                badgeTag.style.background = "rgba(255, 0, 127, 0.2)";
+                badgeTag.style.color = "var(--neon-pink)";
+                card.style.borderColor = "var(--neon-pink)";
+            } else if (score > 20) {
+                statusText.textContent = "⚡ 高壓運轉 (戰鬥狀態)";
+                statusText.style.color = "var(--neon-orange)";
+                badgeTag.textContent = "WARNING";
+                badgeTag.style.background = "rgba(255, 153, 0, 0.2)";
+                badgeTag.style.color = "var(--neon-orange)";
+                card.style.borderColor = "var(--neon-orange)";
+            } else if (score > 5) {
+                statusText.textContent = "🟢 穩健平衡 (日常節奏)";
+                statusText.style.color = "var(--neon-green)";
+                badgeTag.textContent = "STABLE";
+                badgeTag.style.background = "rgba(0, 255, 102, 0.2)";
+                badgeTag.style.color = "var(--neon-green)";
+                card.style.borderColor = "var(--card-border)";
+            } else {
+                statusText.textContent = "☕ 輕鬆摸魚 (悠閒模式)";
+                statusText.style.color = "var(--neon-blue)";
+                badgeTag.textContent = "CHILL";
+                badgeTag.style.background = "rgba(0, 242, 254, 0.2)";
+                badgeTag.style.color = "var(--neon-blue)";
+                card.style.borderColor = "var(--card-border)";
+            }
+        }
+
+        // 📥 一鍵匯出 CSV 報表功能
+        function exportCSV() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+
+            let csvContent = "\uFEFF日期,星期,國定假日,上班打卡,下班打卡,狀態\n";
+            let hourlyRate = config.baseSalary / 240;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                let dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                let dateObj = new Date(year, month - 1, d);
+                let dayOfWeek = weekdays[dateObj.getDay()];
+                let holidayName = nationalHolidays2026[dateStr] || "";
+                let dayData = attendance[dateStr] || { in: '', out: '' };
+
+                let status = "正常";
+                if (!dayData.in) status = "未打卡";
+                else if (holidayName) status = `國定假日(${holidayName})`;
+
+                csvContent += `${dateStr},週${dayOfWeek},${holidayName},${dayData.in},${dayData.out},${status}\n`;
+            }
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `CyberPunch_${year}_${month}_Report.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function updateRecord(dateStr, type, val) {
@@ -744,11 +882,9 @@
             alert(`⚡ 系統回報：打卡成功 (${type === 'in' ? '上班' : '下班'} ${timeStr})`);
         }
 
-        // 📸 拍照或相簿上傳打卡單
         document.getElementById('cameraInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             const statusEl = document.getElementById('ocrStatus');
             statusEl.style.display = 'block';
             statusEl.textContent = '🔄 讀取影像中，正進行神經網路 OCR 解析...';
@@ -757,7 +893,7 @@
                 attendance = defaultAugustData;
                 localStorage.setItem('cyber_salary_attendance', JSON.stringify(attendance));
                 render();
-                statusEl.textContent = '✨ 打卡憑證解析完畢，歷史數據已同步！';
+                statusEl.textContent = '✨ 打卡憑證解析完畢，歷史數據與國定假日已同步！';
             }, 1000);
         });
 
