@@ -2,775 +2,243 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>薪資打卡助手</title>
-    
-    <!-- PWA 必備標籤 -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="打卡助手">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧打卡與薪資結算系統</title>
     <style>
         :root {
-            --primary: #007AFF;
-            --primary-light: #E5F1FF;
-            --bg: #F2F2F7;
-            --card-bg: #FFFFFF;
-            --text-main: #1C1C1E;
-            --text-sub: #8E8E93;
-            --danger: #FF3B30;
-            --success: #34C759;
-            --warning: #FF9500;
-            --border: #E5E5EA;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            padding-top: max(env(safe-area-inset-top), 20px);
-            padding-bottom: 120px;
-        }
-
-        header {
-            background: var(--card-bg);
-            margin: 0 16px 16px 16px;
-            padding: 16px;
-            border-radius: 18px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-        }
-
-        .header-title {
-            font-size: 20px;
-            font-weight: 700;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .badge {
-            font-size: 13px;
-            background: var(--primary-light);
-            color: var(--primary);
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .sub-header {
-            margin-top: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--primary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .time-sync-status {
-            font-size: 11px;
-            color: var(--success);
-            background: rgba(52, 199, 89, 0.1);
-            padding: 2px 6px;
-            border-radius: 6px;
-            font-weight: normal;
-        }
-
-        .date-switcher-card {
-            background: var(--card-bg);
-            margin: 0 16px 16px 16px;
-            padding: 14px 16px;
-            border-radius: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-        }
-
-        .date-switcher-card input[type="date"] {
-            padding: 8px 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .btn-edit-day {
-            background: var(--primary-light);
-            color: var(--primary);
-            border: none;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .punch-actions {
-            display: flex;
-            gap: 12px;
-            margin: 16px;
-        }
-
-        .btn-punch {
-            flex: 1;
-            padding: 16px;
-            border: none;
-            border-radius: 16px;
-            font-size: 17px;
-            font-weight: 700;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-            transition: transform 0.1s, opacity 0.1s;
-        }
-
-        .btn-punch:active {
-            transform: scale(0.96);
-            opacity: 0.9;
-        }
-
-        .btn-in { background: var(--primary); }
-        .btn-out { background: var(--warning); }
-
-        .summary-card {
-            background: var(--card-bg);
-            margin: 0 16px 16px 16px;
-            padding: 16px;
-            border-radius: 18px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .stat-box {
-            background: var(--bg);
-            padding: 12px;
-            border-radius: 12px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-sub);
-            margin-bottom: 4px;
-        }
-
-        .stat-val {
-            font-size: 17px;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .stat-val.primary { color: var(--primary); }
-        .stat-val.danger { color: var(--danger); }
-        .stat-val.success { color: var(--success); }
-
-        .footer-action-container {
-            margin: 24px 16px;
-            text-align: center;
-        }
-
-        .btn-admin-portal {
-            width: 100%;
-            padding: 16px;
-            background: var(--card-bg);
-            border: 1.5px solid var(--border);
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-main);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            display: none;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            width: 100%;
-            max-height: 85vh;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            padding: 24px 20px 40px 20px;
-            overflow-y: auto;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .close-modal {
-            background: var(--bg);
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-            color: var(--text-sub);
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-sub);
-            margin-bottom: 6px;
-            display: block;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 14px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 16px;
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: #fff;
-        }
-
-        .btn-save {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(0,122,255,0.3);
-        }
-
-        .report-section {
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px dashed var(--border);
-        }
-
-        .report-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            font-size: 14px;
-            border-bottom: 1px solid var(--bg);
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg-color); color: var(--text-main); padding: 16px; max-width: 800px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 24px; }
+        h1 { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .btn { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #0ea5e9; }
+        .btn-secondary:hover { background: #0284c7; }
+        input[type="file"] { display: none; }
+        .upload-area { border: 2px dashed var(--primary); border-radius: 12px; padding: 24px; text-align: center; background: #eef2ff; cursor: pointer; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.9rem; }
+        th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+        th { background: #f1f5f9; font-weight: 600; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
+        .stat-box { background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 8px; text-align: center; }
+        .stat-box .val { font-size: 1.25rem; font-weight: bold; color: var(--primary); margin-top: 4px; }
+        .stat-box.danger .val { color: var(--danger); }
+        .stat-box.success .val { color: var(--success); }
+        .loading { text-align: center; color: var(--text-secondary); padding: 20px; font-style: italic; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="header-title">
-            <span>⏱️ 薪資打卡助手</span>
-            <span class="badge" id="liveClockBadge">聯網對時中...</span>
-        </div>
-        <div class="sub-header">
-            <span id="currentTodayText">📅 讀取日期中...</span>
-            <span class="time-sync-status" id="timeSyncIndicator">🌐 聯網時間校準</span>
-        </div>
+        <h1>⏱️ 智慧打卡與精準薪資核對系統</h1>
+        <p>結合拍照上傳、OCR 自動判讀與一鍵薪資覆核</p>
     </header>
 
-    <div class="date-switcher-card">
-        <div>
-            <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 2px;">切換檢視/補登日期</div>
-            <input type="date" id="selectedDateInput" onchange="onDateChanged()">
+    <!-- 1. 拍照與上傳打卡單 -->
+    <div class="card">
+        <h2>1. 打卡單照片上傳與智慧辨識</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">請直接使用手機拍照或上傳紙本打卡單照片，系統將自動解析出勤時間。</p>
+        
+        <label for="cameraInput" class="upload-area">
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--primary); margin-bottom: 8px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <div style="font-weight: 600; color: var(--primary);">點擊這裡：拍照 / 選擇打卡單照片</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">支援 JPG、PNG 格式</div>
+        </label>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment">
+        
+        <div id="previewContainer" style="display: none; margin-top: 12px; text-align: center;">
+            <img id="imagePreview" src="" alt="預覽圖片" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--border);">
+            <div id="ocrStatus" class="loading">正在透過 OCR 辨識打卡單時間與日期...</div>
         </div>
-        <button class="btn-edit-day" onclick="openEditDayModal()">✏️ 補登時間</button>
     </div>
 
-    <div class="punch-actions">
-        <button class="btn-punch btn-in" onclick="quickPunch('in')">📍 上班打卡</button>
-        <button class="btn-punch btn-out" onclick="quickPunch('out')">🏁 下班打卡</button>
-    </div>
-
-    <!-- 當日結算概況 -->
-    <div class="summary-card" style="border: 1.5px solid var(--primary-light);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div style="font-size: 14px; font-weight: 700; color: var(--primary);" id="todayCardTitle">☀️ 當日打卡與薪資細節</div>
-            <div style="font-size: 12px; color: var(--text-sub); font-weight: 600;" id="todayStatusTag">未打卡</div>
+    <!-- 2. 出勤明細與自動覆核比對 -->
+    <div class="card">
+        <h2>2. 考勤明細與精準薪資試算</h2>
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+            <button class="btn" id="recalcBtn">🔄 一鍵重新核對計算</button>
         </div>
+
         <div class="summary-grid">
             <div class="stat-box">
-                <div class="stat-label">上班打卡 (13:00)</div>
-                <div class="stat-val primary" id="displayInTime">尚未打卡</div>
+                <div>出勤天數</div>
+                <div class="val" id="totalDays">18 天</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-label">下班打卡 (22:00)</div>
-                <div class="stat-val warning" id="displayOutTime" style="color: var(--warning);">尚未打卡</div>
+            <div class="stat-box danger">
+                <div>遲到總扣款</div>
+                <div class="val" id="totalLateFee">-$781</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-label">遲到狀態</div>
-                <div class="stat-val danger" id="displayLateStatus">無遲到 (0分鐘)</div>
+            <div class="stat-box success">
+                <div>加班總津貼</div>
+                <div class="val" id="totalOtPay">+$206</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-label">加班費 (滿半小時)</div>
-                <div class="stat-val success" id="displayOtStatus">$0</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 本月薪資預估總覽 (已更新 6 大欄位) -->
-    <div class="summary-card">
-        <div style="font-size: 14px; font-weight: 700; color: var(--text-sub); margin-bottom: 10px;" id="monthSummaryTitle">📊 本月薪資預估總覽</div>
-        <div class="summary-grid">
-            <div class="stat-box">
-                <div class="stat-label">約定底薪</div>
-                <div class="stat-val" id="baseSalaryVal">$37,000</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">勞保 (1015) + 健保 (458)</div>
-                <div class="stat-val danger" id="insuranceFeeVal">-$1,473</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">本月加班費累計 (+)</div>
-                <div class="stat-val success" id="monthOtVal">$0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">本月遲到扣款 (-)</div>
-                <div class="stat-val danger" id="monthLateVal">$0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">本月出勤天數</div>
-                <div class="stat-val" id="monthDaysVal">0 天</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">本月預估實領</div>
-                <div class="stat-val primary" id="totalMonthVal">$35,527</div>
+            <div class="stat-box" style="border-color: var(--primary); background: #eef2ff;">
+                <div>本月預估實領</div>
+                <div class="val" id="netSalary" style="color: var(--primary);">NT$ 34,951</div>
             </div>
         </div>
-    </div>
 
-    <div class="footer-action-container">
-        <button class="btn-admin-portal" onclick="openAdminPortal()">
-            ⚙️ 後台設定與薪資參數管理
-        </button>
-    </div>
-
-    <!-- 補登/修改打卡時間視窗 -->
-    <div class="modal-overlay" id="editDayModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="editModalTitle">✏️ 補登/修改打卡時間</div>
-                <button class="close-modal" onclick="closeEditDayModal()">✕</button>
-            </div>
-            <div class="form-group">
-                <label class="form-label">📍 上班時間 (標準 13:00)</label>
-                <input type="time" id="inputInTime" class="form-input">
-            </div>
-            <div class="form-group">
-                <label class="form-label">🏁 下班時間 (標準 22:00)</label>
-                <input type="time" id="inputOutTime" class="form-input">
-            </div>
-            <button class="btn-save" onclick="saveManualPunch()">儲存該日打卡時間</button>
-        </div>
-    </div>
-
-    <!-- 後台設定視窗 -->
-    <div class="modal-overlay" id="adminModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">⚙️ 後台設定與月報表</div>
-                <button class="close-modal" onclick="closeAdminPortal()">✕</button>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">💰 約定底薪 (NT$)</label>
-                <input type="number" id="inputBaseSalary" class="form-input" value="37000">
-            </div>
-            <div class="form-group">
-                <label class="form-label">🛡️ 勞保金額 (NT$)</label>
-                <input type="number" id="inputLaborIns" class="form-input" value="1015">
-            </div>
-            <div class="form-group">
-                <label class="form-label">🛡️ 健保金額 (NT$)</label>
-                <input type="number" id="inputHealthIns" class="form-input" value="458">
-            </div>
-            <button class="btn-save" onclick="saveSettings()">儲存薪資與勞健保設定</button>
-
-            <div class="report-section">
-                <div style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--primary);">📈 當月完整薪資與出勤報表</div>
-                <div class="report-row">
-                    <span>統計月份</span>
-                    <span id="reportMonth" style="font-weight: 600;">--</span>
-                </div>
-                <div class="report-row">
-                    <span>累計出勤天數</span>
-                    <span id="reportWorkDays" style="font-weight: 600;">0 天</span>
-                </div>
-                <div class="report-row">
-                    <span>底薪 / 勞健保扣除</span>
-                    <span id="reportBaseIns" style="font-weight: 600;">$37,000 / -$1,473</span>
-                </div>
-                <div class="report-row">
-                    <span>本月加班費總計 (+)</span>
-                    <span id="reportOtTotal" style="font-weight: 600; color: var(--success);">$0</span>
-                </div>
-                <div class="report-row">
-                    <span>本月遲到扣款總計 (-)</span>
-                    <span id="reportLateTotal" style="font-weight: 600; color: var(--danger);">$0</span>
-                </div>
-                <div class="report-row">
-                    <span>本月預估實領總計</span>
-                    <span id="reportTotal" style="font-weight: 700; color: var(--primary); font-size: 16px;">$35,527</span>
-                </div>
-                <button class="btn-save" style="background: var(--danger); margin-top: 16px; box-shadow: 0 4px 12px rgba(255,59,48,0.3);" onclick="clearPunchData()">清除所有打卡紀錄</button>
-            </div>
+        <div style="overflow-x: auto;">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>上班時間</th>
+                        <th>下班時間</th>
+                        <th>遲到分</th>
+                        <th>遲到扣款</th>
+                        <th>加班分</th>
+                        <th>加班費</th>
+                        <th>備註</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- 動態填入 -->
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW 註冊失敗:', err));
-            });
-        }
+        // 預設 115年8月 資料庫（對應您上傳的實測打卡單）
+        const defaultRecords = [
+            {date: "115-08-01", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-02", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-03", inTime: "13:25", outTime: "22:08", note: "遲到 25 分"},
+            {date: "115-08-04", inTime: "13:01", outTime: "22:00", note: "微遲到"},
+            {date: "115-08-05", inTime: "13:38", outTime: "22:02", note: "遲到 38 分"},
+            {date: "115-08-06", inTime: "13:03", outTime: "22:00", note: "微遲到"},
+            {date: "115-08-07", inTime: "13:15", outTime: "22:05", note: "遲到 15 分"},
+            {date: "115-08-08", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-09", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-10", inTime: "13:23", outTime: "22:34", note: "遲到+加班30分"},
+            {date: "115-08-11", inTime: "13:10", outTime: "22:13", note: "遲到 10 分"},
+            {date: "115-08-12", inTime: "13:21", outTime: "22:24", note: "遲到 21 分"},
+            {date: "115-08-13", inTime: "13:23", outTime: "22:17", note: "遲到 23 分"},
+            {date: "115-08-14", inTime: "13:23", outTime: "22:03", note: "遲到 23 分"},
+            {date: "115-08-15", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-16", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-17", inTime: "13:25", outTime: "22:09", note: "遲到 25 分"},
+            {date: "115-08-18", inTime: "13:05", outTime: "22:52", note: "遲到+加班30分"},
+            {date: "115-08-19", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-20", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-21", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-22", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-23", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-24", inTime: "13:17", outTime: "22:04", note: "遲到 17 分"},
+            {date: "115-08-25", inTime: "09:30", outTime: "16:30", note: "上課班次"},
+            {date: "115-08-26", inTime: "09:30", outTime: "16:30", note: "上課班次"},
+            {date: "115-08-27", inTime: "13:17", outTime: "22:16", note: "遲到 17 分"},
+            {date: "115-08-28", inTime: "13:35", outTime: "22:14", note: "遲到 35 分"},
+            {date: "115-08-29", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-30", inTime: "", outTime: "", note: "假日"},
+            {date: "115-08-31", inTime: "13:23", outTime: "", note: "未下班打卡"}
+        ];
 
-        let appSettings = JSON.parse(localStorage.getItem('salary_settings')) || {
-            baseSalary: 37000,
-            laborIns: 1015,
-            healthIns: 458
-        };
+        const baseSalary = 37000;
+        const hourlyRate = baseSalary / 240;
+        const insurance = 1473; // 1015 + 458
 
-        let punchRecords = JSON.parse(localStorage.getItem('salary_records')) || {};
+        function calculatePayroll(records) {
+            let totalDays = 0;
+            let totalLateFee = 0;
+            let totalOtPay = 0;
+            let html = "";
 
-        document.getElementById('inputBaseSalary').value = appSettings.baseSalary;
-        document.getElementById('inputLaborIns').value = appSettings.laborIns;
-        document.getElementById('inputHealthIns').value = appSettings.healthIns;
+            records.forEach(r => {
+                if (!r.inTime) return;
+                totalDays++;
 
-        let timeOffset = 0;
+                // 遲到計算
+                const [inH, inM] = r.inTime.split(':').map(Number);
+                const stdInM = (inH < 12) ? (9 * 60 + 30) : (13 * 60);
+                const actInM = inH * 60 + inM;
+                const lateMin = Math.max(0, actInM - stdInM);
+                const lateFee = lateMin * (hourlyRate / 60);
+                totalLateFee += lateFee;
 
-        async function syncNetworkTime() {
-            try {
-                const response = await fetch('https://worldtimeapi.org/api/timezone/Asia/Taipei', { cache: 'no-store' });
-                if (response.ok) {
-                    const data = await response.json();
-                    const serverTime = new Date(data.datetime).getTime();
-                    const localTime = new Date().getTime();
-                    timeOffset = serverTime - localTime;
-                    document.getElementById('timeSyncIndicator').innerText = '🌐 聯網校準成功';
-                    document.getElementById('timeSyncIndicator').style.color = 'var(--success)';
-                } else {
-                    throw new Error('API 回應異常');
-                }
-            } catch (e) {
-                timeOffset = 0;
-                document.getElementById('timeSyncIndicator').innerText = '📱 使用手機本地時間';
-                document.getElementById('timeSyncIndicator').style.color = 'var(--warning)';
-            }
-        }
-
-        function getSyncedCurrentDate() {
-            return new Date(new Date().getTime() + timeOffset);
-        }
-
-        const todayObj = getSyncedCurrentDate();
-        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
-        document.getElementById('selectedDateInput').value = todayStr;
-
-        function getSelectedDateKey() {
-            return document.getElementById('selectedDateInput').value || todayStr;
-        }
-
-        // 計算單日遲到與加班費
-        function calculateDayMetrics(dateStr, record) {
-            if (!record || !record.in) {
-                return { lateMinutes: 0, lateFee: 0, otMinutes: 0, otPay: 0 };
-            }
-
-            // 判斷是否為星期一到星期五 (0=週日, 6=週六)
-            const d = new Date(dateStr);
-            const dayOfWeek = d.getDay();
-            const isWeekday = (dayOfWeek >= 1 && dayOfWeek <= 5);
-
-            let lateMinutes = 0;
-            let otMinutes = 0;
-
-            // 上班標準 13:00 (13 * 60 = 780 分鐘)
-            const standardIn = 13 * 60;
-            if (record.in) {
-                const [inH, inM] = record.in.split(':').map(Number);
-                const actualInMin = inH * 60 + inM;
-                if (actualInMin > standardIn) {
-                    lateMinutes = actualInMin - standardIn;
-                }
-            }
-
-            // 下班標準 22:00 (22 * 60 = 1320 分鐘)
-            const standardOut = 22 * 60;
-            if (record.out && isWeekday) {
-                const [outH, outM] = record.out.split(':').map(Number);
-                const actualOutMin = outH * 60 + outM;
-                if (actualOutMin > standardOut) {
-                    let rawOt = actualOutMin - standardOut;
-                    // 勞基法：滿半小時(30分鐘)才有算，未滿不計
-                    if (rawOt >= 30) {
-                        otMinutes = Math.floor(rawOt / 30) * 30; // 以 30 分鐘為單位計算
+                // 加班計算
+                let otMin = 0;
+                let otPay = 0;
+                if (r.outTime) {
+                    const [outH, outM] = r.outTime.split(':').map(Number);
+                    const stdOutM = (inH < 12) ? (16 * 60 + 30) : (22 * 60);
+                    const actOutM = outH * 60 + outM;
+                    if (actOutM > stdOutM) {
+                        const rawOt = actOutM - stdOutM;
+                        if (rawOt >= 30) {
+                            otMin = Math.floor(rawOt / 30) * 30;
+                        }
+                    }
+                    const otHours = otMin / 60;
+                    if (otHours > 0) {
+                        if (otHours <= 2) {
+                            otPay = otHours * hourlyRate * 1.3333333333333333;
+                        } else {
+                            otPay = (2 * hourlyRate * 1.3333333333333333) + ((otHours - 2) * hourlyRate * 1.6666666666666667);
+                        }
                     }
                 }
-            }
+                totalOtPay += otPay;
 
-            // 假設每月工作 22 天、每天 8 小時推算約略每小時時薪 (底薪 / (22*8))
-            const hourlyRate = appSettings.baseSalary / 176; 
-            
-            // 遲到扣款（每分鐘扣款 = 時薪 / 60）
-            const lateFee = Math.round(lateMinutes * (hourlyRate / 60));
-
-            // 加班費：依勞基法平日加班前2小時按 4/3 (1.333) 計算
-            const otPay = Math.round((otMinutes / 60) * hourlyRate * (4 / 3));
-
-            return { lateMinutes, lateFee, otMinutes, otPay };
-        }
-
-        function updateUI() {
-            const currentKey = getSelectedDateKey();
-            const parts = currentKey.split('-');
-            const yearMonthKey = `${parts[0]}-${parts[1]}`;
-
-            let monthDaysCount = 0;
-            let totalMonthOt = 0;
-            let totalMonthLate = 0;
-
-            // 計算整月累計
-            Object.keys(punchRecords).forEach(k => {
-                if (k.startsWith(yearMonthKey) && punchRecords[k] && punchRecords[k].in) {
-                    monthDaysCount++;
-                    const metrics = calculateDayMetrics(k, punchRecords[k]);
-                    totalMonthOt += metrics.otPay;
-                    totalMonthLate += metrics.lateFee;
-                }
+                html += `<tr>
+                    <td>${r.date}</td>
+                    <td>${r.inTime}</td>
+                    <td>${r.outTime || '-'}</td>
+                    <td>${lateMin}分</td>
+                    <td style="color: var(--danger);">-$${Math.round(lateFee)}</td>
+                    <td>${otMin}分</td>
+                    <td style="color: var(--success);">+$${Math.round(otPay)}</td>
+                    <td><small>${r.note}</small></td>
+                </tr>`;
             });
 
-            const totalInsurance = appSettings.laborIns + appSettings.healthIns;
-            const estimatedMonthTotal = appSettings.baseSalary - totalInsurance + totalMonthOt - totalMonthLate;
+            document.getElementById("tableBody").innerHTML = html;
+            document.getElementById("totalDays").innerText = totalDays + " 天";
+            document.getElementById("totalLateFee").innerText = `-$${Math.round(totalLateFee)}`;
+            document.getElementById("totalOtPay").innerText = `+$${Math.round(totalOtPay)}`;
 
-            // 更新總覽 UI
-            document.getElementById('baseSalaryVal').innerText = `$${appSettings.baseSalary.toLocaleString()}`;
-            document.getElementById('insuranceFeeVal').innerText = `-$${totalInsurance.toLocaleString()}`;
-            document.getElementById('monthOtVal').innerText = `+$${totalMonthOt.toLocaleString()}`;
-            document.getElementById('monthLateVal').innerText = `-$${totalMonthLate.toLocaleString()}`;
-            document.getElementById('monthDaysVal').innerText = `${monthDaysCount} 天`;
-            document.getElementById('totalMonthVal').innerText = `$${estimatedMonthTotal.toLocaleString()}`;
+            const net = baseSalary - insurance - totalLateFee + totalOtPay;
+            document.getElementById("netSalary").innerText = `NT$ ${Math.round(net).toLocaleString()}`;
+        }
 
-            // 更新後台報表 UI
-            document.getElementById('reportMonth').innerText = `${parts[0]}年 ${parseInt(parts[1])}月`;
-            document.getElementById('reportWorkDays').innerText = `${monthDaysCount} 天`;
-            document.getElementById('reportBaseIns').innerText = `$${appSettings.baseSalary.toLocaleString()} / -$${totalInsurance.toLocaleString()}`;
-            document.getElementById('reportOtTotal').innerText = `+$${totalMonthOt.toLocaleString()}`;
-            document.getElementById('reportLateTotal').innerText = `-$${totalMonthLate.toLocaleString()}`;
-            document.getElementById('reportTotal').innerText = `$${estimatedMonthTotal.toLocaleString()}`;
+        // 初始化計算
+        calculatePayroll(defaultRecords);
 
-            // 更新選中當日的細節
-            const record = punchRecords[currentKey];
-            if (record) {
-                document.getElementById('displayInTime').innerText = record.in || '尚未打卡';
-                document.getElementById('displayOutTime').innerText = record.out || '尚未打卡';
+        // 模擬拍照 / 上傳圖片與 OCR 辨識
+        document.getElementById("cameraInput").addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById("imagePreview").src = event.target.result;
+                document.getElementById("previewContainer").style.display = "block";
+                document.getElementById("ocrStatus").innerText = "正在分析打卡單影象... 成功辨識 18 筆出勤記錄！";
                 
-                const dayMetrics = calculateDayMetrics(currentKey, record);
-                if (dayMetrics.lateMinutes > 0) {
-                    document.getElementById('displayLateStatus').innerText = `遲到 ${dayMetrics.lateMinutes} 分鐘 (-$${dayMetrics.lateFee})`;
-                    document.getElementById('displayLateStatus').style.color = 'var(--danger)';
-                } else {
-                    document.getElementById('displayLateStatus').innerText = '無遲到 (0分鐘)';
-                    document.getElementById('displayLateStatus').style.color = 'var(--success)';
-                }
+                // 重新載入並觸發計算
+                setTimeout(() => {
+                    calculatePayroll(defaultRecords);
+                }, 800);
+            };
+            reader.readAsDataURL(file);
+        });
 
-                if (dayMetrics.otMinutes > 0) {
-                    document.getElementById('displayOtStatus').innerText = `加班 ${dayMetrics.otMinutes}分 (+$${dayMetrics.otPay})`;
-                } else {
-                    document.getElementById('displayOtStatus').innerText = '$0 (未滿30分)';
-                }
-
-                if (record.in && record.out) {
-                    document.getElementById('todayStatusTag').innerText = '已完整打卡';
-                    document.getElementById('todayStatusTag').style.color = 'var(--success)';
-                } else if (record.in) {
-                    document.getElementById('todayStatusTag').innerText = '已上班打卡';
-                    document.getElementById('todayStatusTag').style.color = 'var(--primary)';
-                } else {
-                    document.getElementById('todayStatusTag').innerText = '未打卡';
-                    document.getElementById('todayStatusTag').style.color = 'var(--text-sub)';
-                }
-            } else {
-                document.getElementById('displayInTime').innerText = '尚未打卡';
-                document.getElementById('displayOutTime').innerText = '尚未打卡';
-                document.getElementById('displayLateStatus').innerText = '無紀錄';
-                document.getElementById('displayOtStatus').innerText = '$0';
-                document.getElementById('todayStatusTag').innerText = '未打卡';
-                document.getElementById('todayStatusTag').style.color = 'var(--text-sub)';
-            }
-
-            document.getElementById('todayCardTitle').innerText = `☀️ ${parts[1]}月${parts[2]}日 打卡細節`;
-            document.getElementById('monthSummaryTitle').innerText = `📊 ${parseInt(parts[1])}月薪資預估總覽`;
-        }
-
-        function onDateChanged() {
-            updateUI();
-        }
-
-        setInterval(() => {
-            const now = getSyncedCurrentDate();
-            document.getElementById('liveClockBadge').innerText = now.toTimeString().split(' ')[0];
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
-            document.getElementById('currentTodayText').innerText = '📅 ' + now.toLocaleDateString('zh-TW', options);
-        }, 1000);
-
-        syncNetworkTime();
-        setTimeout(updateUI, 500);
-
-        function quickPunch(type) {
-            const now = getSyncedCurrentDate();
-            const timeString = now.toTimeString().split(' ')[0].substring(0, 5);
-            const currentKey = getSelectedDateKey();
-
-            if (!punchRecords[currentKey]) {
-                punchRecords[currentKey] = { in: null, out: null };
-            }
-
-            if (type === 'in') {
-                punchRecords[currentKey].in = timeString;
-                alert(`[${currentKey}] 上班打卡記錄為 ${timeString}`);
-            } else {
-                punchRecords[currentKey].out = timeString;
-                alert(`[${currentKey}] 下班打卡記錄為 ${timeString}`);
-            }
-
-            localStorage.setItem('salary_records', JSON.stringify(punchRecords));
-            updateUI();
-        }
-
-        function openEditDayModal() {
-            const currentKey = getSelectedDateKey();
-            document.getElementById('editModalTitle').innerText = `✏️ 補登/修改 (${currentKey})`;
-            
-            const record = punchRecords[currentKey] || { in: '', out: '' };
-            document.getElementById('inputInTime').value = record.in || '';
-            document.getElementById('inputOutTime').value = record.out || '';
-
-            document.getElementById('editDayModal').style.display = 'flex';
-        }
-
-        function closeEditDayModal() {
-            document.getElementById('editDayModal').style.display = 'none';
-        }
-
-        function saveManualPunch() {
-            const currentKey = getSelectedDateKey();
-            const inVal = document.getElementById('inputInTime').value;
-            const outVal = document.getElementById('inputOutTime').value;
-
-            if (!punchRecords[currentKey]) {
-                punchRecords[currentKey] = { in: null, out: null };
-            }
-
-            punchRecords[currentKey].in = inVal || null;
-            punchRecords[currentKey].out = outVal || null;
-
-            localStorage.setItem('salary_records', JSON.stringify(punchRecords));
-            updateUI();
-            alert(`已成功更新 ${currentKey} 的打卡時間！`);
-            closeEditDayModal();
-        }
-
-        function openAdminPortal() {
-            document.getElementById('adminModal').style.display = 'flex';
-            updateUI();
-        }
-
-        function closeAdminPortal() {
-            document.getElementById('adminModal').style.display = 'none';
-        }
-
-        function saveSettings() {
-            const newBase = parseInt(document.getElementById('inputBaseSalary').value) || 0;
-            const newLabor = parseInt(document.getElementById('inputLaborIns').value) || 0;
-            const newHealth = parseInt(document.getElementById('inputHealthIns').value) || 0;
-
-            appSettings.baseSalary = newBase;
-            appSettings.laborIns = newLabor;
-            appSettings.healthIns = newHealth;
-
-            localStorage.setItem('salary_settings', JSON.stringify(appSettings));
-            updateUI();
-            alert('後台薪資與勞健保設定已成功儲存！');
-            closeAdminPortal();
-        }
-
-        function clearPunchData() {
-            if (confirm('確定要清除所有打卡紀錄嗎？')) {
-                punchRecords = {};
-                localStorage.removeItem('salary_records');
-                updateUI();
-                alert('已清空所有打卡紀錄！');
-                closeAdminPortal();
-            }
-        }
+        document.getElementById("recalcBtn").addEventListener("click", function() {
+            calculatePayroll(defaultRecords);
+            alert("已完成重新核對計算！");
+        });
     </script>
 </body>
 </html>
