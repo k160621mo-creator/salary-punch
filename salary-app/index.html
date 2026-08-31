@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Black-Gold 奢華黑金薪資打卡助手 v5.1</title>
+    <title>Black-Gold 奢華黑金薪資打卡助手 v5.3</title>
 
     <!-- PWA / iOS Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -400,7 +400,7 @@
 
     <header>
         <div class="header-title">
-            <span>🪙 LUX-PUNCH v5.1</span>
+            <span>🪙 LUX-PUNCH v5.3</span>
             <div class="header-right-actions">
                 <button class="btn-reload" onclick="window.location.reload()">
                     取消讀取
@@ -609,7 +609,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'lux-punch-v9';
+                    const CACHE_NAME = 'lux-punch-v11';
                     self.addEventListener('install', (e) => {
                         e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
                     });
@@ -718,7 +718,9 @@
                 let hourlyRate = config.baseSalary / 240;
                 let secondRate = hourlyRate / 3600;
 
-                let [sh, sm] = config.workStart.split(':').map(Number);
+                let isClassShift = dayData.in.startsWith('09:');
+                let stdInTime = isClassShift ? '09:30' : config.workStart;
+                let [sh, sm] = stdInTime.split(':').map(Number);
                 let startMins = sh * 60 + sm;
                 let inMins = inH * 60 + inM;
                 let lateMins = inMins > startMins ? (inMins - startMins) : 0;
@@ -768,7 +770,7 @@
             let totalOTFee = 0;
             let totalLateFee = 0;
             let totalOvertimeHours = 0;
-            let totalLateMinutes = 0;
+            let totalLateMinutes = 0; // 確切累計總遲到分鐘數
             let totalDaysWorked = 0;
             let totalWorkedHours = 0;
 
@@ -791,12 +793,11 @@
                 let stdInTime = isClassShift ? '09:30' : config.workStart;
                 let stdOutTime = isClassShift ? '16:30' : config.workEnd;
 
-                if (dayData.in && dayData.out) {
+                if (dayData.in) {
                     totalDaysWorked++;
                     totalWorkedHours += isClassShift ? 7 : 8;
-                }
 
-                if (dayData.in) {
+                    // 計算當天遲到分鐘與扣款：遲到扣款 = 遲到分鐘數 × (時薪 ÷ 60)
                     let [h, m] = dayData.in.split(':').map(Number);
                     let [sh, sm] = stdInTime.split(':').map(Number);
                     let inMins = h * 60 + m;
@@ -804,7 +805,7 @@
                     if (inMins > startMins) {
                         lateMins = inMins - startMins;
                         lateFee = lateMins * (hourlyRate / 60);
-                        totalLateMinutes += lateMins;
+                        totalLateMinutes += lateMins; // 確實累加至總遲到分鐘數
                     }
                 }
 
@@ -838,14 +839,16 @@
                         document.getElementById('todayStatusTag').textContent = '✅ 已完成下班打卡';
                         document.getElementById('todayStatusTag').style.color = 'var(--neon-green)';
                         document.getElementById('todaySalaryVal').textContent = '$' + todaySalary.toLocaleString() + '.00';
-                    } else if (!dayData.in) {
+                    } else if (dayData.in && !dayData.out) {
+                        document.getElementById('todayStatusTag').textContent = '🟡 工作中（計薪中）';
+                        document.getElementById('todayStatusTag').style.color = 'var(--neon-gold)';
+                    } else {
                         document.getElementById('todayStatusTag').textContent = '未打卡';
                         document.getElementById('todayStatusTag').style.color = 'var(--text-sub)';
                         document.getElementById('todaySalaryVal').textContent = '$0.00';
                     }
                 }
 
-                // 畫面清單渲染判斷
                 if (showFullMonth || isToday) {
                     let card = document.createElement('div');
                     card.className = `day-card ${isToday ? 'is-today' : ''}`;
@@ -889,7 +892,7 @@
             let netSalary = Number(config.baseSalary) + Math.round(totalOTFee) - Math.round(totalLateFee) - totalInsurance;
             document.getElementById('netSalaryVal').textContent = '$' + netSalary.toLocaleString();
 
-            // 更新最下方的當月預估薪水總額清單數據（修復未展開全月時數據歸零的問題）
+            // 更新最下方的當月預估薪水總額清單數據
             document.getElementById('bottomListDaysHours').textContent = `${totalDaysWorked} 天 / ${totalWorkedHours + totalOvertimeHours} 小時`;
             document.getElementById('bottomListBase').textContent = '$' + Number(config.baseSalary).toLocaleString();
             document.getElementById('bottomListOt').textContent = `+$${Math.round(totalOTFee).toLocaleString()}`;
