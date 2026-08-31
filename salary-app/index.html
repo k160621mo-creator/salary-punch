@@ -166,27 +166,6 @@
 
         input[type="file"] { display: none; }
 
-        .burnout-card {
-            background: var(--card-bg);
-            margin: 0 16px 16px 16px;
-            padding: 14px 16px;
-            border-radius: 16px;
-            border: 1px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        .burnout-info .title { font-size: 11px; color: var(--text-sub); font-weight: 700; }
-        .burnout-info .status { font-size: 15px; font-weight: 900; margin-top: 2px; }
-        .burnout-badge {
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-
         .summary-card {
             background: var(--card-bg);
             margin: 0 16px 16px 16px;
@@ -420,7 +399,6 @@
         <div class="header-title">
             <span>⚡ CYBERPUNCH v5.0</span>
             <div class="header-right-actions">
-                <!-- 🔄 修改：僅保留四個字「取消讀取」 -->
                 <button class="btn-reload" onclick="window.location.reload()">
                     取消讀取
                 </button>
@@ -436,15 +414,8 @@
     <div class="punch-actions">
         <button class="btn-punch btn-in" onclick="quickPunch('in')">上班</button>
         <button class="btn-punch btn-out" onclick="quickPunch('out')">下班</button>
-    </div>
-
-    <!-- 🔥 血汗指數動態評分卡 -->
-    <div class="burnout-card" id="burnoutCard">
-        <div class="burnout-info">
-            <div class="title">⚡ 精神狀態與血汗指數 (Burnout Index)</div>
-            <div class="status" id="burnoutStatusText">分析運算中...</div>
-        </div>
-        <div class="burnout-badge" id="burnoutBadgeTag">NORMAL</div>
+        <!-- 🆕 新增：補登打卡按鈕 -->
+        <button class="btn-punch" style="background: var(--neon-purple); color: var(--text-main); box-shadow: 0 0 15px rgba(189, 0, 255, 0.4);" onclick="openRetroactiveModal()">📅 補登</button>
     </div>
 
     <!-- 📸 支援相簿與拍照上傳卡片 -->
@@ -558,6 +529,7 @@
         </button>
     </div>
 
+    <!-- ⚙️ 系統核心設定 Modal -->
     <div class="modal" id="adminModal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -574,11 +546,34 @@
         </div>
     </div>
 
+    <!-- 🆕 補登打卡專用 Modal -->
+    <div class="modal" id="retroactiveModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 style="font-size: 18px; color: var(--neon-purple);">📅 跨月/跨日補登打卡</h3>
+                <span style="font-size: 20px; cursor: pointer; color: var(--text-sub);" onclick="closeRetroactiveModal()">✕</span>
+            </div>
+            <div class="form-group">
+                <label>選擇補登日期</label>
+                <input type="date" id="retroDate" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>上班打卡時間</label>
+                <input type="time" id="retroInTime" class="form-control" value="13:00">
+            </div>
+            <div class="form-group">
+                <label>下班打卡時間</label>
+                <input type="time" id="retroOutTime" class="form-control" value="22:00">
+            </div>
+            <button class="btn-submit" style="background: var(--neon-purple); color: var(--text-main); box-shadow: 0 0 15px rgba(189, 0, 255, 0.4);" onclick="saveRetroactiveRecord()">確認寫入紀錄</button>
+        </div>
+    </div>
+
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'cyber-punch-v6';
+                    const CACHE_NAME = 'cyber-punch-v7';
                     self.addEventListener('install', (e) => {
                         e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
                     });
@@ -873,46 +868,6 @@
             document.getElementById('yearlyOtVal').textContent = '+$' + yearlyOT.toLocaleString();
             document.getElementById('yearlyLateVal').textContent = '-$' + yearlyLate.toLocaleString();
             document.getElementById('yearlyTotalNetVal').textContent = '$' + yearlyNet.toLocaleString();
-
-            updateBurnoutIndex(totalOvertimeHours, totalLateMinutes, totalDaysWorked);
-        }
-
-        function updateBurnoutIndex(otHours, lateMins, daysWorked) {
-            const statusText = document.getElementById('burnoutStatusText');
-            const badgeTag = document.getElementById('burnoutBadgeTag');
-            const card = document.getElementById('burnoutCard');
-
-            let score = (otHours * 2) - (lateMins * 0.5) + (daysWorked * 0.5);
-
-            if (score > 40) {
-                statusText.textContent = "🔥 極度過勞 (Cyber-Zombie 狀態)";
-                statusText.style.color = "var(--neon-pink)";
-                badgeTag.textContent = "CRITICAL";
-                badgeTag.style.background = "rgba(255, 0, 127, 0.2)";
-                badgeTag.style.color = "var(--neon-pink)";
-                card.style.borderColor = "var(--neon-pink)";
-            } else if (score > 20) {
-                statusText.textContent = "⚡ 高壓運轉 (戰鬥狀態)";
-                statusText.style.color = "var(--neon-orange)";
-                badgeTag.textContent = "WARNING";
-                badgeTag.style.background = "rgba(255, 153, 0, 0.2)";
-                badgeTag.style.color = "var(--neon-orange)";
-                card.style.borderColor = "var(--neon-orange)";
-            } else if (score > 5) {
-                statusText.textContent = "🟢 穩健平衡 (日常節奏)";
-                statusText.style.color = "var(--neon-green)";
-                badgeTag.textContent = "STABLE";
-                badgeTag.style.background = "rgba(0, 255, 102, 0.2)";
-                badgeTag.style.color = "var(--neon-green)";
-                card.style.borderColor = "var(--card-border)";
-            } else {
-                statusText.textContent = "☕ 輕鬆摸魚 (悠閒模式)";
-                statusText.style.color = "var(--neon-blue)";
-                badgeTag.textContent = "CHILL";
-                badgeTag.style.background = "rgba(0, 242, 254, 0.2)";
-                badgeTag.style.color = "var(--neon-blue)";
-                card.style.borderColor = "var(--card-border)";
-            }
         }
 
         function exportCSV() {
@@ -969,6 +924,39 @@
             localStorage.setItem('cyber_salary_attendance', JSON.stringify(attendance));
             render();
             alert(`⚡ 系統回報：打卡成功 (${type === 'in' ? '上班' : '下班'} ${timeStr})`);
+        }
+
+        function openRetroactiveModal() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            document.getElementById('retroDate').value = `${year}-${month}-${day}`;
+            document.getElementById('retroactiveModal').classList.add('active');
+        }
+
+        function closeRetroactiveModal() {
+            document.getElementById('retroactiveModal').classList.remove('active');
+        }
+
+        function saveRetroactiveRecord() {
+            const dateStr = document.getElementById('retroDate').value;
+            const inTime = document.getElementById('retroInTime').value;
+            const outTime = document.getElementById('retroOutTime').value;
+
+            if (!dateStr) {
+                alert('請選擇有效的日期！');
+                return;
+            }
+
+            if (!attendance[dateStr]) attendance[dateStr] = { in: '', out: '' };
+            if (inTime) attendance[dateStr].in = inTime;
+            if (outTime) attendance[dateStr].out = outTime;
+
+            localStorage.setItem('cyber_salary_attendance', JSON.stringify(attendance));
+            closeRetroactiveModal();
+            render();
+            alert(`📅 成功補登 ${dateStr} 的打卡紀錄！`);
         }
 
         document.getElementById('cameraInput').addEventListener('change', function(e) {
