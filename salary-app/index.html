@@ -115,7 +115,7 @@
         .btn-in { background: var(--primary); }
         .btn-out { background: var(--warning); }
 
-        /* 📸 支援拍照與相簿上傳卡片 */
+        /* 📸 支援相簿與拍照上傳卡片 */
         .upload-card {
             background: var(--card-bg);
             margin: 0 16px 16px 16px;
@@ -170,14 +170,15 @@
         .stat-val.danger { color: var(--danger); }
         .stat-val.success { color: var(--success); }
 
-        /* 動態跳動金額呼吸燈特效 */
+        /* 高頻率賺錢數字跳動呼吸燈特效 */
         @keyframes pulseGlow {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(1.01); }
+            100% { opacity: 1; transform: scale(1); }
         }
         .live-earning {
-            animation: pulseGlow 1.5s infinite ease-in-out;
+            animation: pulseGlow 0.8s infinite ease-in-out;
+            letter-spacing: -0.5px;
         }
 
         .records-container {
@@ -331,7 +332,7 @@
         <button class="btn-punch btn-out" onclick="quickPunch('out')">🏁 下班打卡</button>
     </div>
 
-    <!-- 📸 手機拍照與相簿上傳專區（不強制 capture，可選相簿或拍照） -->
+    <!-- 📸 拍照與相簿上傳專區 -->
     <div class="upload-card">
         <label for="cameraInput" class="upload-area" style="display: block;">
             <div style="font-size: 24px; margin-bottom: 2px;">📷 📂</div>
@@ -344,13 +345,13 @@
 
     <div class="summary-card" style="border: 1.5px solid var(--primary-light);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-size: 14px; font-weight: 700; color: var(--primary);">☀️ 當日結算概況 <span id="earningPulseTag" style="font-size: 11px; background: var(--primary-light); padding: 2px 6px; border-radius: 6px; display: none;">⚡ 即時賺錢中</span></div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--primary);">☀️ 當日結算概況 <span id="earningPulseTag" style="font-size: 11px; background: var(--primary-light); padding: 2px 6px; border-radius: 6px; display: none;">⚡ 每秒高頻跳動中</span></div>
             <div style="font-size: 12px; color: var(--text-sub);" id="todayStatusTag">未打卡</div>
         </div>
         <div class="summary-grid">
             <div class="stat-box">
-                <div class="stat-label">今日預估薪資</div>
-                <div class="stat-val primary" id="todaySalaryVal">$0</div>
+                <div class="stat-label">今日預估薪資 (即時)</div>
+                <div class="stat-val primary" id="todaySalaryVal">$0.00</div>
             </div>
             <div class="stat-box">
                 <div class="stat-label">工時 (正常/加班)</div>
@@ -429,7 +430,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'punch-assistant-v3';
+                    const CACHE_NAME = 'punch-assistant-v4';
                     self.addEventListener('install', (e) => {
                         e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
                     });
@@ -476,10 +477,8 @@
         let attendance = JSON.parse(localStorage.getItem('salary_attendance')) || defaultAugustData;
         let showFullMonth = false;
 
-        // 全域暫存今日計算數值供每秒即時跳動使用
-        let liveTodayBase = 0;
-
         function startLiveClock() {
+            // 時鐘每秒更新
             function updateClock() {
                 const now = new Date();
                 const optionsDate = { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', timeZone: 'Asia/Taipei' };
@@ -495,15 +494,16 @@
 
                 document.getElementById('liveClockBadge').textContent = timeStr;
                 document.getElementById('currentTodayText').textContent = `📅 今日：${y}/${m}/${d} (${wd})`;
-
-                // ⚡ 即時每秒薪資跳動計算
-                updateLiveEarning(now);
             }
             updateClock();
             setInterval(updateClock, 1000);
+
+            // ⚡ 薪資金額高頻跳動特效：每 100 毫秒（0.1秒）精準計算並重新渲染小數點金額
+            setInterval(updateLiveEarningHighFreq, 100);
         }
 
-        function updateLiveEarning(now) {
+        function updateLiveEarningHighFreq() {
+            const now = new Date();
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
@@ -514,21 +514,21 @@
             const pulseTagEl = document.getElementById('earningPulseTag');
 
             if (dayData && dayData.in && !dayData.out) {
-                // 上班中：依據秒數每秒增加
+                // 上班中：高頻計算秒數與毫秒
                 pulseTagEl.style.display = 'inline-block';
                 salaryValEl.classList.add('live-earning');
 
                 let [inH, inM] = dayData.in.split(':').map(Number);
-                let checkInSeconds = inH * 3600 + inM * 60;
-                let currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+                let checkInMs = (inH * 3600 + inM * 60) * 1000;
+                let currentMs = (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) * 1000 + now.getMilliseconds();
 
-                let workedSeconds = currentSeconds - checkInSeconds;
+                let workedSeconds = (currentMs - checkInMs) / 1000;
                 if (workedSeconds < 0) workedSeconds = 0;
 
                 let hourlyRate = config.baseSalary / 240;
                 let secondRate = hourlyRate / 3600;
 
-                // 基礎薪資 + 累積秒數金額 - 遲到扣款
+                // 遲到扣款
                 let [sh, sm] = config.workStart.split(':').map(Number);
                 let startMins = sh * 60 + sm;
                 let inMins = inH * 60 + inM;
@@ -538,11 +538,11 @@
                 let earnedToday = (workedSeconds * secondRate) - lateFee;
                 if (earnedToday < 0) earnedToday = 0;
 
-                salaryValEl.textContent = '$' + Math.round(earnedToday).toLocaleString();
+                // 顯示兩位小數，製造極速跳動感
+                salaryValEl.textContent = '$' + earnedToday.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             } else {
                 pulseTagEl.style.display = 'none';
                 salaryValEl.classList.remove('live-earning');
-                // 非上班中顯示靜態計算值
                 render();
             }
         }
@@ -634,14 +634,11 @@
                         todaySalary = Math.round((hourlyRate * 8) - lateFee + otFee);
                         document.getElementById('todayStatusTag').textContent = '✅ 已完成下班打卡';
                         document.getElementById('todayStatusTag').style.color = 'var(--success)';
-                        document.getElementById('todaySalaryVal').textContent = '$' + todaySalary.toLocaleString();
-                    } else if (dayData.in) {
-                        document.getElementById('todayStatusTag').textContent = '⏳ 上班中';
-                        document.getElementById('todayStatusTag').style.color = 'var(--primary)';
-                    } else {
+                        document.getElementById('todaySalaryVal').textContent = '$' + todaySalary.toLocaleString() + '.00';
+                    } else if (!dayData.in) {
                         document.getElementById('todayStatusTag').textContent = '未打卡';
                         document.getElementById('todayStatusTag').style.color = 'var(--text-sub)';
-                        document.getElementById('todaySalaryVal').textContent = '$0';
+                        document.getElementById('todaySalaryVal').textContent = '$0.00';
                     }
                 }
 
