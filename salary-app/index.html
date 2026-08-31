@@ -414,7 +414,6 @@
     <div class="punch-actions">
         <button class="btn-punch btn-in" onclick="quickPunch('in')">上班</button>
         <button class="btn-punch btn-out" onclick="quickPunch('out')">下班</button>
-        <!-- 🆕 新增：補登打卡按鈕 -->
         <button class="btn-punch" style="background: var(--neon-purple); color: var(--text-main); box-shadow: 0 0 15px rgba(189, 0, 255, 0.4);" onclick="openRetroactiveModal()">📅 補登</button>
     </div>
 
@@ -517,6 +516,40 @@
 
     <div class="records-container" id="recordsList"></div>
 
+    <!-- 🆕 新增：最下方的當月預估薪水總額清單列表 -->
+    <div class="summary-card" style="margin-top: 16px; border: 1.5px solid var(--neon-green); box-shadow: 0 0 20px rgba(0, 255, 102, 0.15);">
+        <div style="font-size: 15px; font-weight: 800; color: var(--neon-green); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span>💰 當月預估薪水總額清單</span>
+            <span style="font-size: 12px; color: var(--text-sub);" id="bottomListMonthTitle">即時結算</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(11, 15, 25, 0.6); border-radius: 8px; font-size: 13px;">
+                <span style="color: var(--text-sub);">出勤天數 / 總工時</span>
+                <span style="font-weight: 700; color: var(--text-main);" id="bottomListDaysHours">0 天 / 0 小時</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(11, 15, 25, 0.6); border-radius: 8px; font-size: 13px;">
+                <span style="color: var(--text-sub);">約定底薪 (+)</span>
+                <span style="font-weight: 700; color: var(--text-main);" id="bottomListBase">$37,000</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(11, 15, 25, 0.6); border-radius: 8px; font-size: 13px;">
+                <span style="color: var(--text-sub);">加班費總計 (+)</span>
+                <span style="font-weight: 700; color: var(--neon-green);" id="bottomListOt">+$0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(11, 15, 25, 0.6); border-radius: 8px; font-size: 13px;">
+                <span style="color: var(--text-sub);">遲到扣款總計 (-)</span>
+                <span style="font-weight: 700; color: var(--neon-pink);" id="bottomListLate">-$0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(11, 15, 25, 0.6); border-radius: 8px; font-size: 13px;">
+                <span style="color: var(--text-sub);">勞健保自負額 (-)</span>
+                <span style="font-weight: 700; color: var(--neon-pink);" id="bottomListInsurance">-$1,473</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 12px; background: rgba(0, 255, 102, 0.1); border: 1px solid rgba(0, 255, 102, 0.3); border-radius: 10px; margin-top: 4px;">
+                <span style="font-weight: 800; font-size: 14px; color: var(--neon-green);">當月最終預估總額</span>
+                <span style="font-weight: 900; font-size: 18px; color: var(--neon-green); text-shadow: 0 0 10px rgba(0, 255, 102, 0.4);" id="bottomListTotalFinal">$0</span>
+            </div>
+        </div>
+    </div>
+
     <div class="bottom-bar">
         <button class="btn-bottom" id="btnToggleView" onclick="toggleViewMode()">
             <span id="toggleIcon">🗓️</span> <span id="toggleText">全月總覽</span>
@@ -546,7 +579,7 @@
         </div>
     </div>
 
-    <!-- 🆕 補登打卡專用 Modal -->
+    <!-- 📅 補登打卡專用 Modal -->
     <div class="modal" id="retroactiveModal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -573,7 +606,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'cyber-punch-v7';
+                    const CACHE_NAME = 'cyber-punch-v8';
                     self.addEventListener('install', (e) => {
                         e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
                     });
@@ -723,6 +756,7 @@
             const todayD = now.getDate();
 
             document.getElementById('currentMonthBadge').textContent = `${year}年${month}月帳務`;
+            document.getElementById('bottomListMonthTitle').textContent = `${year}年${month}月結算`;
 
             const daysInMonth = new Date(year, month, 0).getDate();
             const recordsList = document.getElementById('recordsList');
@@ -850,6 +884,14 @@
 
             let netSalary = Number(config.baseSalary) + Math.round(totalOTFee) - Math.round(totalLateFee) - totalInsurance;
             document.getElementById('netSalaryVal').textContent = '$' + netSalary.toLocaleString();
+
+            // 更新最下方新增的當月總額清單數據
+            document.getElementById('bottomListDaysHours').textContent = `${totalDaysWorked} 天 / ${totalWorkedHours + totalOvertimeHours} 小時`;
+            document.getElementById('bottomListBase').textContent = '$' + Number(config.baseSalary).toLocaleString();
+            document.getElementById('bottomListOt').textContent = `+$${Math.round(totalOTFee).toLocaleString()}`;
+            document.getElementById('bottomListLate').textContent = `-$${Math.round(totalLateFee).toLocaleString()}`;
+            document.getElementById('bottomListInsurance').textContent = `-$${totalInsurance.toLocaleString()}`;
+            document.getElementById('bottomListTotalFinal').textContent = '$' + netSalary.toLocaleString();
 
             document.getElementById('formulaDetailBox').innerHTML = `
                 <b>💡 本月薪資算式拆解：</b><br>
