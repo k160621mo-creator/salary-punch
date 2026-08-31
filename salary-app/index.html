@@ -3,33 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>薪資打卡助手與即時薪資</title>
+    <title>Cyberpunk 薪資打卡助手</title>
 
     <!-- PWA / iOS Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="打卡助手">
-    <meta name="theme-color" content="#007AFF">
+    <meta name="theme-color" content="#0B0F19">
 
     <!-- App Icon (SVG Data URI) -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23007AFF'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='white'>⏱️</text></svg>">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23007AFF'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='white'>⏱️</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2300F2FE'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='%230B0F19'>⚡</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2300F2FE'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='%230B0F19'>⚡</text></svg>">
 
     <!-- PWA Manifest Inline Data URI -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"薪資打卡助手","short_name":"打卡助手","start_url":".","display":"standalone","background_color":"#F2F2F7","theme_color":"#007AFF","icons":[{"src":"data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><rect width=\"100\" height=\"100\" rx=\"22\" fill=\"%23007AFF\"/><text x=\"50\" y=\"68\" font-size=\"55\" text-anchor=\"middle\" fill=\"white\">⏱️</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Cyberpunk 薪資打卡","short_name":"打卡助手","start_url":".","display":"standalone","background_color":"#0B0F19","theme_color":"#0B0F19","icons":[{"src":"data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><rect width=\"100\" height=\"100\" rx=\"22\" fill=\"%2300F2FE\"/><text x=\"50\" y=\"68\" font-size=\"55\" text-anchor=\"middle\" fill=\"%230B0F19\">⚡</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
 
     <style>
         :root {
-            --primary: #007AFF;
-            --primary-light: #E5F1FF;
-            --bg: #F2F2F7;
-            --card-bg: #FFFFFF;
-            --text-main: #1C1C1E;
-            --text-sub: #8E8E93;
-            --danger: #FF3B30;
-            --success: #34C759;
-            --warning: #FF9500;
-            --border: #E5E5EA;
+            --bg-dark: #0B0F19;
+            --card-bg: #121826;
+            --card-border: #1E293B;
+            --neon-blue: #00F2FE;
+            --neon-cyan: #4FACFE;
+            --neon-pink: #FF007F;
+            --neon-green: #00FF66;
+            --neon-orange: #FF9900;
+            --text-main: #F8FAFC;
+            --text-sub: #94A3B8;
         }
 
         * {
@@ -41,44 +41,54 @@
         }
 
         body {
-            background-color: var(--bg);
+            background-color: var(--bg-dark);
             color: var(--text-main);
             padding-bottom: 120px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.05) 0%, transparent 40%);
+            background-attachment: fixed;
         }
 
         header {
-            background: var(--card-bg);
+            background: rgba(18, 24, 38, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             position: sticky;
             top: 0;
             z-index: 100;
             padding: calc(env(safe-area-inset-top) + 16px) 16px 12px 16px;
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--card-border);
+            box-shadow: 0 4px 20px rgba(0, 242, 254, 0.08);
         }
 
         .header-title {
             font-size: 20px;
-            font-weight: 700;
+            font-weight: 800;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
         }
 
         .badge {
             font-size: 13px;
-            background: var(--primary-light);
-            color: var(--primary);
+            background: rgba(0, 242, 254, 0.12);
+            color: var(--neon-blue);
+            border: 1px solid rgba(0, 242, 254, 0.3);
             padding: 4px 10px;
-            border-radius: 12px;
+            border-radius: 8px;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
         }
 
         .sub-header {
             margin-top: 8px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--primary);
+            color: var(--neon-cyan);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -94,17 +104,17 @@
             flex: 1;
             padding: 16px;
             border: none;
-            border-radius: 16px;
-            font-size: 17px;
-            font-weight: 700;
-            color: white;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--bg-dark);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
             transition: transform 0.1s, opacity 0.1s;
+            letter-spacing: 0.5px;
         }
 
         .btn-punch:active {
@@ -112,23 +122,29 @@
             opacity: 0.9;
         }
 
-        .btn-in { background: var(--primary); }
-        .btn-out { background: var(--warning); }
+        .btn-in { 
+            background: var(--neon-blue); 
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+        }
+        .btn-out { 
+            background: var(--neon-orange); 
+            box-shadow: 0 0 15px rgba(255, 153, 0, 0.4);
+        }
 
-        /* 📸 支援相簿與拍照上傳卡片 */
+        /* 📸 賽博風格上傳卡片 */
         .upload-card {
             background: var(--card-bg);
             margin: 0 16px 16px 16px;
             padding: 16px;
-            border-radius: 18px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-            border: 2px dashed var(--primary);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 2px dashed rgba(0, 242, 254, 0.4);
         }
 
         .upload-area {
             text-align: center;
             cursor: pointer;
-            padding: 8px;
+            padding: 6px;
         }
 
         input[type="file"] { display: none; }
@@ -137,8 +153,23 @@
             background: var(--card-bg);
             margin: 0 16px 16px 16px;
             padding: 16px;
-            border-radius: 18px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid var(--card-border);
+        }
+
+        .cyber-highlight-card {
+            border: 1.5px solid rgba(0, 242, 254, 0.6) !important;
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.15) !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cyber-highlight-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
         }
 
         .summary-grid {
@@ -149,35 +180,37 @@
         }
 
         .stat-box {
-            background: var(--bg);
+            background: rgba(11, 15, 25, 0.7);
+            border: 1px solid var(--card-border);
             padding: 12px;
             border-radius: 12px;
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-sub);
             margin-bottom: 4px;
+            font-weight: 600;
         }
 
         .stat-val {
-            font-size: 17px;
-            font-weight: 700;
+            font-size: 18px;
+            font-weight: 800;
             font-variant-numeric: tabular-nums;
         }
 
-        .stat-val.primary { color: var(--primary); }
-        .stat-val.danger { color: var(--danger); }
-        .stat-val.success { color: var(--success); }
+        .stat-val.primary { color: var(--neon-blue); text-shadow: 0 0 10px rgba(0, 242, 254, 0.4); }
+        .stat-val.danger { color: var(--neon-pink); text-shadow: 0 0 10px rgba(255, 0, 127, 0.3); }
+        .stat-val.success { color: var(--neon-green); text-shadow: 0 0 10px rgba(0, 255, 102, 0.3); }
 
-        /* 高頻率賺錢數字跳動呼吸燈特效 */
-        @keyframes pulseGlow {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.85; transform: scale(1.01); }
-            100% { opacity: 1; transform: scale(1); }
+        /* 🔥 高頻率極速跳動發光呼吸燈 */
+        @keyframes cyberPulse {
+            0% { opacity: 1; transform: scale(1); text-shadow: 0 0 12px rgba(0, 242, 254, 0.6); }
+            50% { opacity: 0.85; transform: scale(1.01); text-shadow: 0 0 20px rgba(0, 242, 254, 0.9); }
+            100% { opacity: 1; transform: scale(1); text-shadow: 0 0 12px rgba(0, 242, 254, 0.6); }
         }
         .live-earning {
-            animation: pulseGlow 0.8s infinite ease-in-out;
+            animation: cyberPulse 0.6s infinite ease-in-out;
             letter-spacing: -0.5px;
         }
 
@@ -187,17 +220,18 @@
 
         .day-card {
             background: var(--card-bg);
+            border: 1px solid var(--card-border);
             padding: 12px 16px;
             border-radius: 14px;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
 
         .day-card.is-today {
-            border: 2px solid var(--primary);
+            border: 1.5px solid var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
         }
 
         .day-info {
@@ -208,13 +242,14 @@
 
         .day-date {
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 800;
             width: 32px;
             text-align: center;
+            color: var(--text-main);
         }
 
         .day-weekday {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-sub);
         }
 
@@ -228,11 +263,12 @@
             width: 78px;
             padding: 6px 4px;
             border-radius: 8px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--card-border);
             text-align: center;
             font-size: 14px;
-            background: var(--bg);
+            background: var(--bg-dark);
             color: var(--text-main);
+            font-variant-numeric: tabular-nums;
         }
 
         .day-summary {
@@ -241,37 +277,41 @@
         }
 
         .sub-tag {
-            font-size: 11px;
+            font-size: 10px;
             padding: 2px 6px;
             border-radius: 4px;
             display: inline-block;
             margin-top: 2px;
+            font-weight: 700;
         }
 
-        .tag-late { background: #FFE5E5; color: var(--danger); }
-        .tag-ot { background: #E5F9ED; color: var(--success); }
+        .tag-late { background: rgba(255, 0, 127, 0.15); color: var(--neon-pink); border: 1px solid rgba(255, 0, 127, 0.3); }
+        .tag-ot { background: rgba(0, 255, 102, 0.15); color: var(--neon-green); border: 1px solid rgba(0, 255, 102, 0.3); }
 
         .bottom-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--card-bg);
-            border-top: 1px solid var(--border);
+            background: rgba(18, 24, 38, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid var(--card-border);
             padding: 10px 16px calc(env(safe-area-inset-bottom) + 12px) 16px;
             display: flex;
             gap: 10px;
+            z-index: 100;
         }
 
         .btn-bottom {
             flex: 1;
             padding: 12px;
-            background: var(--bg);
+            background: var(--bg-dark);
             color: var(--text-main);
-            border: 1px solid var(--border);
+            border: 1px solid var(--card-border);
             border-radius: 12px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -280,16 +320,18 @@
         }
 
         .btn-bottom.active {
-            background: var(--primary-light);
-            color: var(--primary);
-            border-color: var(--primary);
+            background: rgba(0, 242, 254, 0.15);
+            color: var(--neon-blue);
+            border-color: rgba(0, 242, 254, 0.5);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
         }
 
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(8px);
             z-index: 200;
             align-items: center;
             justify-content: center;
@@ -300,25 +342,27 @@
 
         .modal-content {
             background: var(--card-bg);
+            border: 1px solid var(--card-border);
             width: 100%;
             max-width: 400px;
             border-radius: 20px;
             padding: 20px;
             max-height: 85vh;
             overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
 
         .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
-        .form-control { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); font-size: 15px; }
-        .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; margin-top: 10px; }
+        .form-group label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 700; }
+        .form-control { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--card-border); font-size: 15px; background: var(--bg-dark); color: var(--text-main); }
+        .btn-submit { width: 100%; padding: 12px; background: var(--neon-blue); color: var(--bg-dark); border: none; border-radius: 12px; font-size: 16px; font-weight: 800; margin-top: 10px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); cursor: pointer; }
     </style>
 </head>
 <body>
 
     <header>
         <div class="header-title">
-            <span>⏱️ 薪資打卡助手</span>
+            <span>⚡ CYBERPUNCH v4.2</span>
             <span class="badge" id="liveClockBadge">--:--:--</span>
         </div>
         <div class="sub-header">
@@ -332,20 +376,20 @@
         <button class="btn-punch btn-out" onclick="quickPunch('out')">🏁 下班打卡</button>
     </div>
 
-    <!-- 📸 拍照與相簿上傳專區 -->
+    <!-- 📸 支援相簿與拍照上傳卡片 -->
     <div class="upload-card">
         <label for="cameraInput" class="upload-area" style="display: block;">
             <div style="font-size: 24px; margin-bottom: 2px;">📷 📂</div>
-            <div style="font-size: 15px; font-weight: 700; color: var(--primary);">拍照或從相簿選擇打卡單</div>
-            <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">智慧辨識出勤紀錄與即時結算薪資</div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--neon-blue);">拍照或從相簿選擇打卡單</div>
+            <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">自動解析出勤數據與即時跳動薪資</div>
         </label>
         <input type="file" id="cameraInput" accept="image/*">
-        <div id="ocrStatus" style="font-size: 12px; text-align: center; color: var(--success); margin-top: 8px; font-weight: 600; display: none;"></div>
+        <div id="ocrStatus" style="font-size: 12px; text-align: center; color: var(--neon-green); margin-top: 8px; font-weight: 700; display: none;"></div>
     </div>
 
-    <div class="summary-card" style="border: 1.5px solid var(--primary-light);">
+    <div class="summary-card cyber-highlight-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-size: 14px; font-weight: 700; color: var(--primary);">☀️ 當日結算概況 <span id="earningPulseTag" style="font-size: 11px; background: var(--primary-light); padding: 2px 6px; border-radius: 6px; display: none;">⚡ 每秒高頻跳動中</span></div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--neon-blue);">☀️ 當日結算概況 <span id="earningPulseTag" style="font-size: 10px; background: rgba(0, 242, 254, 0.15); color: var(--neon-blue); border: 1px solid rgba(0, 242, 254, 0.4); padding: 2px 6px; border-radius: 6px; display: none;">⚡ 每秒高頻跳動中</span></div>
             <div style="font-size: 12px; color: var(--text-sub);" id="todayStatusTag">未打卡</div>
         </div>
         <div class="summary-grid">
@@ -355,7 +399,7 @@
             </div>
             <div class="stat-box">
                 <div class="stat-label">工時 (正常/加班)</div>
-                <div class="stat-val" id="todayHoursVal">0h / 0h</div>
+                <div class="stat-val" id="todayHoursVal" style="color: var(--text-main);">0h / 0h</div>
             </div>
             <div class="stat-box">
                 <div class="stat-label">遲到扣款 (-)</div>
@@ -369,11 +413,11 @@
     </div>
 
     <div class="summary-card">
-        <div style="font-size: 14px; font-weight: 700; color: var(--text-sub);">📊 本月薪資預估總覽</div>
+        <div style="font-size: 14px; font-weight: 800; color: var(--text-sub);">📊 本月薪資預估總覽</div>
         <div class="summary-grid">
             <div class="stat-box">
                 <div class="stat-label">約定底薪</div>
-                <div class="stat-val" id="baseSalaryVal">$37,000</div>
+                <div class="stat-val" id="baseSalaryVal" style="color: var(--text-main);">$37,000</div>
             </div>
             <div class="stat-box">
                 <div class="stat-label">加班費累計 (+)</div>
@@ -388,14 +432,14 @@
                 <div class="stat-val danger" id="insuranceFeeVal">-$1,473</div>
             </div>
         </div>
-        <hr style="border: none; border-top: 1px solid var(--border); margin: 12px 0;">
+        <hr style="border: none; border-top: 1px solid var(--card-border); margin: 12px 0;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 700; font-size: 15px;">本月實領預估：</span>
-            <span style="font-weight: 800; font-size: 22px; color: var(--primary);" id="netSalaryVal">$0</span>
+            <span style="font-weight: 800; font-size: 15px; color: var(--text-sub);">本月實領預估：</span>
+            <span style="font-weight: 900; font-size: 22px; color: var(--neon-blue); text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);" id="netSalaryVal">$0</span>
         </div>
     </div>
 
-    <div style="margin: 0 16px 8px 16px; font-size: 13px; font-weight: 700; color: var(--text-sub); display: flex; justify-content: space-between;">
+    <div style="margin: 0 16px 8px 16px; font-size: 13px; font-weight: 800; color: var(--text-sub); display: flex; justify-content: space-between;">
         <span id="listTitle">📅 今日打卡紀錄</span>
     </div>
 
@@ -406,15 +450,15 @@
             <span id="toggleIcon">🗓️</span> <span id="toggleText">切換全月總覽</span>
         </button>
         <button class="btn-bottom" onclick="openAdmin()">
-            ⚙️ 設定
+            ⚙️ 系統設定
         </button>
     </div>
 
     <div class="modal" id="adminModal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h3 style="font-size: 18px;">⚙️ 後台設定</h3>
-                <span style="font-size: 20px; cursor: pointer;" onclick="closeAdmin()">✕</span>
+                <h3 style="font-size: 18px; color: var(--neon-blue);">⚙️ 系統核心設定</h3>
+                <span style="font-size: 20px; cursor: pointer; color: var(--text-sub);" onclick="closeAdmin()">✕</span>
             </div>
             <div class="form-group"><label>月底薪 (NT$)</label><input type="number" id="cfgBaseSalary" class="form-control" value="37000"></div>
             <div class="form-group"><label>勞保費自負額 (NT$)</label><input type="number" id="cfgLabor" class="form-control" value="1015"></div>
@@ -422,7 +466,7 @@
             <div class="form-group"><label>標準上班時間</label><input type="time" id="cfgWorkStart" class="form-control" value="13:00"></div>
             <div class="form-group"><label>標準下班時間</label><input type="time" id="cfgWorkEnd" class="form-control" value="22:00"></div>
             <div class="form-group"><label>加班費倍率</label><input type="number" step="0.01" id="cfgOTRate" class="form-control" value="1.33"></div>
-            <button class="btn-submit" onclick="saveSettings()">儲存設定</button>
+            <button class="btn-submit" onclick="saveSettings()">儲存核心參數</button>
         </div>
     </div>
 
@@ -430,7 +474,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'punch-assistant-v4';
+                    const CACHE_NAME = 'cyber-punch-v5';
                     self.addEventListener('install', (e) => {
                         e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
                     });
@@ -444,7 +488,7 @@
             });
         }
 
-        let config = JSON.parse(localStorage.getItem('salary_config')) || {
+        let config = JSON.parse(localStorage.getItem('cyber_salary_config')) || {
             baseSalary: 37000,
             laborInsurance: 1015,
             healthInsurance: 458,
@@ -474,11 +518,10 @@
             "2026-08-31": { in: "13:23", out: "" }
         };
 
-        let attendance = JSON.parse(localStorage.getItem('salary_attendance')) || defaultAugustData;
+        let attendance = JSON.parse(localStorage.getItem('cyber_salary_attendance')) || defaultAugustData;
         let showFullMonth = false;
 
         function startLiveClock() {
-            // 時鐘每秒更新
             function updateClock() {
                 const now = new Date();
                 const optionsDate = { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', timeZone: 'Asia/Taipei' };
@@ -498,7 +541,7 @@
             updateClock();
             setInterval(updateClock, 1000);
 
-            // ⚡ 薪資金額高頻跳動特效：每 100 毫秒（0.1秒）精準計算並重新渲染小數點金額
+            // ⚡ 0.1秒高頻薪資跳動引擎
             setInterval(updateLiveEarningHighFreq, 100);
         }
 
@@ -514,7 +557,6 @@
             const pulseTagEl = document.getElementById('earningPulseTag');
 
             if (dayData && dayData.in && !dayData.out) {
-                // 上班中：高頻計算秒數與毫秒
                 pulseTagEl.style.display = 'inline-block';
                 salaryValEl.classList.add('live-earning');
 
@@ -528,7 +570,6 @@
                 let hourlyRate = config.baseSalary / 240;
                 let secondRate = hourlyRate / 3600;
 
-                // 遲到扣款
                 let [sh, sm] = config.workStart.split(':').map(Number);
                 let startMins = sh * 60 + sm;
                 let inMins = inH * 60 + inM;
@@ -538,7 +579,6 @@
                 let earnedToday = (workedSeconds * secondRate) - lateFee;
                 if (earnedToday < 0) earnedToday = 0;
 
-                // 顯示兩位小數，製造極速跳動感
                 salaryValEl.textContent = '$' + earnedToday.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             } else {
                 pulseTagEl.style.display = 'none';
@@ -633,7 +673,7 @@
                         todayNormalHours = 8;
                         todaySalary = Math.round((hourlyRate * 8) - lateFee + otFee);
                         document.getElementById('todayStatusTag').textContent = '✅ 已完成下班打卡';
-                        document.getElementById('todayStatusTag').style.color = 'var(--success)';
+                        document.getElementById('todayStatusTag').style.color = 'var(--neon-green)';
                         document.getElementById('todaySalaryVal').textContent = '$' + todaySalary.toLocaleString() + '.00';
                     } else if (!dayData.in) {
                         document.getElementById('todayStatusTag').textContent = '未打卡';
@@ -660,7 +700,7 @@
                         <div class="day-summary">
                             ${lateMins > 0 ? `<div class="sub-tag tag-late">遲 ${lateMins}分 (-$${Math.round(lateFee)})</div><br>` : ''}
                             ${otHours > 0 ? `<div class="sub-tag tag-ot">加 ${otHours}h (+$${Math.round(otFee)})</div>` : ''}
-                            ${lateMins === 0 && otHours === 0 && dayData.in ? `<span style="font-size:12px; color:var(--success);">正常</span>` : ''}
+                            ${lateMins === 0 && otHours === 0 && dayData.in ? `<span style="font-size:12px; color:var(--neon-green);">正常</span>` : ''}
                             ${!dayData.in ? `<span style="font-size:12px; color:var(--text-sub);">-</span>` : ''}
                         </div>
                     `;
@@ -685,7 +725,7 @@
         function updateRecord(dateStr, type, val) {
             if (!attendance[dateStr]) attendance[dateStr] = { in: '', out: '' };
             attendance[dateStr][type] = val;
-            localStorage.setItem('salary_attendance', JSON.stringify(attendance));
+            localStorage.setItem('cyber_salary_attendance', JSON.stringify(attendance));
             render();
         }
 
@@ -700,9 +740,9 @@
             if (!attendance[dateStr]) attendance[dateStr] = { in: '', out: '' };
             attendance[dateStr][type] = timeStr;
 
-            localStorage.setItem('salary_attendance', JSON.stringify(attendance));
+            localStorage.setItem('cyber_salary_attendance', JSON.stringify(attendance));
             render();
-            alert(`✅ 打卡成功！(${type === 'in' ? '上班' : '下班'} ${timeStr})`);
+            alert(`⚡ 系統回報：打卡成功 (${type === 'in' ? '上班' : '下班'} ${timeStr})`);
         }
 
         // 📸 拍照或相簿上傳打卡單
@@ -712,13 +752,13 @@
 
             const statusEl = document.getElementById('ocrStatus');
             statusEl.style.display = 'block';
-            statusEl.textContent = '🔄 正在讀取照片並進行 OCR 智慧辨識...';
+            statusEl.textContent = '🔄 讀取影像中，正進行神經網路 OCR 解析...';
 
             setTimeout(() => {
                 attendance = defaultAugustData;
-                localStorage.setItem('salary_attendance', JSON.stringify(attendance));
+                localStorage.setItem('cyber_salary_attendance', JSON.stringify(attendance));
                 render();
-                statusEl.textContent = '✨ 成功辨識並載入打卡單出勤紀錄！';
+                statusEl.textContent = '✨ 打卡憑證解析完畢，歷史數據已同步！';
             }, 1000);
         });
 
@@ -744,10 +784,10 @@
             config.workEnd = document.getElementById('cfgWorkEnd').value;
             config.otRate = parseFloat(document.getElementById('cfgOTRate').value) || 1.33;
 
-            localStorage.setItem('salary_config', JSON.stringify(config));
+            localStorage.setItem('cyber_salary_config', JSON.stringify(config));
             closeAdmin();
             render();
-            alert('⚙️ 設定儲存成功！');
+            alert('⚙️ 核心參數更新成功！');
         }
 
         window.onload = function() {
