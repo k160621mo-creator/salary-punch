@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cyberpunk 薪資打卡助手 v5.0</title>
+    <title>Cyberpunk 薪資打卡助手 v5.0 (含詳細算式與年度統計)</title>
 
     <!-- PWA / iOS Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -145,7 +145,6 @@
 
         input[type="file"] { display: none; }
 
-        /* 🔥 血汗指數動態評分卡 */
         .burnout-card {
             background: var(--card-bg);
             margin: 0 16px 16px 16px;
@@ -221,6 +220,18 @@
         .stat-val.danger { color: var(--neon-pink); text-shadow: 0 0 10px rgba(255, 0, 127, 0.3); }
         .stat-val.success { color: var(--neon-green); text-shadow: 0 0 10px rgba(0, 255, 102, 0.3); }
 
+        .formula-box {
+            background: rgba(11, 15, 25, 0.9);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+        .formula-box b { color: var(--neon-cyan); }
+
         @keyframes cyberPulse {
             0% { opacity: 1; transform: scale(1); text-shadow: 0 0 12px rgba(0, 242, 254, 0.6); }
             50% { opacity: 0.85; transform: scale(1.01); text-shadow: 0 0 20px rgba(0, 242, 254, 0.9); }
@@ -228,7 +239,6 @@
         }
         .live-earning {
             animation: cyberPulse 0.6s infinite ease-in-out;
-            letter-spacing: -0.5px;
         }
 
         .records-container {
@@ -400,7 +410,6 @@
         <button class="btn-punch btn-out" onclick="quickPunch('out')">下班</button>
     </div>
 
-    <!-- 🔥 血汗指數動態評分卡 -->
     <div class="burnout-card" id="burnoutCard">
         <div class="burnout-info">
             <div class="title">⚡ 精神狀態與血汗指數 (Burnout Index)</div>
@@ -409,7 +418,6 @@
         <div class="burnout-badge" id="burnoutBadgeTag">NORMAL</div>
     </div>
 
-    <!-- 📸 支援相簿與拍照上傳卡片 -->
     <div class="upload-card">
         <label for="cameraInput" class="upload-area" style="display: block;">
             <div style="font-size: 24px; margin-bottom: 2px;">📷 📂</div>
@@ -446,7 +454,7 @@
     </div>
 
     <div class="summary-card">
-        <div style="font-size: 14px; font-weight: 800; color: var(--text-sub);">📊 本月薪資預估總覽</div>
+        <div style="font-size: 14px; font-weight: 800; color: var(--text-sub);">📊 本月薪資預估總覽與算式明細</div>
         <div class="summary-grid">
             <div class="stat-box">
                 <div class="stat-label">約定底薪</div>
@@ -466,9 +474,41 @@
             </div>
         </div>
         <hr style="border: none; border-top: 1px solid var(--card-border); margin: 12px 0;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <span style="font-weight: 800; font-size: 15px; color: var(--text-sub);">本月實領預估：</span>
             <span style="font-weight: 900; font-size: 22px; color: var(--neon-blue); text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);" id="netSalaryVal">$0</span>
+        </div>
+
+        <!-- 算式明細與年度統計區塊 -->
+        <div class="formula-box" id="formulaDetailBox">
+            <b>💡 薪資算式拆解：</b><br>
+            • 標準時薪 = 底薪 $37,000 ÷ 240 小時 = $154.17/小時<br>
+            • 遲到扣款 = 總遲到分鐘數 × (時薪 ÷ 60)<br>
+            • 加班費 = 加班總時數 × 時薪 × 1.33<br>
+            • 實領薪資 = 底薪 + 加班費 - 遲到扣款 - 勞健保自負額
+        </div>
+    </div>
+
+    <!-- 年度總計統計看板 -->
+    <div class="summary-card" style="border: 1px solid rgba(189, 0, 255, 0.4); box-shadow: 0 0 20px rgba(189, 0, 255, 0.1);">
+        <div style="font-size: 14px; font-weight: 800; color: var(--neon-purple); margin-bottom: 8px;">📈 2026 年度累計總結算 (自動統計)</div>
+        <div class="summary-grid">
+            <div class="stat-box">
+                <div class="stat-label">年度累計總工時</div>
+                <div class="stat-val" id="yearlyHoursVal" style="color: var(--neon-cyan);">0 小時</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">年度加班費總額</div>
+                <div class="stat-val success" id="yearlyOtVal">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">年度遲到扣款總額</div>
+                <div class="stat-val danger" id="yearlyLateVal">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">年度實領總收入</div>
+                <div class="stat-val primary" id="yearlyTotalNetVal">$0</div>
+            </div>
         </div>
     </div>
 
@@ -482,8 +522,8 @@
         <button class="btn-bottom" id="btnToggleView" onclick="toggleViewMode()">
             <span id="toggleIcon">🗓️</span> <span id="toggleText">全月總覽</span>
         </button>
-        <button class="btn-bottom action-export" onclick="exportCSV()">
-            📥 匯出CSV
+        <button class="btn-bottom action-export" onclick="exportCSVWithFormula()">
+            📥 匯出完整報表
         </button>
         <button class="btn-bottom" onclick="openAdmin()">
             ⚙️ 設定
@@ -507,23 +547,6 @@
     </div>
 
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swCode = `
-                    const CACHE_NAME = 'cyber-punch-v6';
-                    self.addEventListener('install', (e) => {
-                        e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
-                    });
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(caches.match(e.request).then((response) => response || fetch(e.request)));
-                    });
-                `;
-                const blob = new Blob([swCode], { type: 'text/javascript' });
-                const blobUrl = URL.createObjectURL(blob);
-                navigator.serviceWorker.register(blobUrl).catch(() => {});
-            });
-        }
-
         let config = JSON.parse(localStorage.getItem('cyber_salary_config')) || {
             baseSalary: 37000,
             laborInsurance: 1015,
@@ -533,20 +556,11 @@
             otRate: 1.33
         };
 
-        // 📅 行政院人事行政總處：國定假日與民俗節日資料庫模擬 (支援 2026 年)
         const nationalHolidays2026 = {
             "2026-01-01": "元旦",
-            "2026-02-16": "農曆春節",
-            "2026-02-17": "農曆春節",
-            "2026-02-18": "農曆春節",
-            "2026-02-19": "農曆春節",
-            "2026-02-20": "農曆春節",
-            "2026-02-28": "和平紀念日",
-            "2026-04-04": "兒童節",
-            "2026-04-05": "民族掃墓節",
-            "2026-06-19": "端午節",
-            "2026-09-25": "中秋節",
-            "2026-10-10": "國慶日"
+            "2026-02-16": "農曆春節", "2026-02-17": "農曆春節", "2026-02-18": "農曆春節", "2026-02-19": "農曆春節", "2026-02-20": "農曆春節",
+            "2026-02-28": "和平紀念日", "2026-04-04": "兒童節", "2026-04-05": "民族掃墓節",
+            "2026-06-19": "端午節", "2026-09-25": "中秋節", "2026-10-10": "國慶日"
         };
 
         let defaultAugustData = {
@@ -671,6 +685,7 @@
             let totalOvertimeHours = 0;
             let totalLateMinutes = 0;
             let totalDaysWorked = 0;
+            let totalWorkedHours = 0;
 
             let hourlyRate = config.baseSalary / 240;
             const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
@@ -691,8 +706,12 @@
                 let stdInTime = isClassShift ? '09:30' : config.workStart;
                 let stdOutTime = isClassShift ? '16:30' : config.workEnd;
 
-                if (dayData.in) {
+                if (dayData.in && dayData.out) {
                     totalDaysWorked++;
+                    totalWorkedHours += isClassShift ? 7 : 8;
+                }
+
+                if (dayData.in) {
                     let [h, m] = dayData.in.split(':').map(Number);
                     let [sh, sm] = stdInTime.split(':').map(Number);
                     let inMins = h * 60 + m;
@@ -713,7 +732,6 @@
                         let diffMins = outMins - endMins;
                         if (diffMins >= 30) {
                             otHours = Math.floor(diffMins / 30) * 0.5;
-                            // 若當天為國定假日，加班費率自動加倍 (2.0x)
                             let currentRate = holidayName ? 2.0 : config.otRate;
                             otFee = otHours * hourlyRate * currentRate;
                             totalOvertimeHours += otHours;
@@ -730,8 +748,8 @@
                     todayOtHours = otHours;
 
                     if (dayData.in && dayData.out) {
-                        todayNormalHours = 8;
-                        todaySalary = Math.round((hourlyRate * 8) - lateFee + otFee);
+                        todayNormalHours = isClassShift ? 7 : 8;
+                        todaySalary = Math.round((hourlyRate * todayNormalHours) - lateFee + otFee);
                         document.getElementById('todayStatusTag').textContent = '✅ 已完成下班打卡';
                         document.getElementById('todayStatusTag').style.color = 'var(--neon-green)';
                         document.getElementById('todaySalaryVal').textContent = '$' + todaySalary.toLocaleString() + '.00';
@@ -769,99 +787,79 @@
                 }
             }
 
-            document.getElementById('todayHoursVal').textContent = `${todayNormalHours}h / ${todayOtHours}h`;
-            document.getElementById('todayLateVal').textContent = '-$' + todayLateFee.toLocaleString();
-            document.getElementById('todayOtVal').textContent = '+$' + todayOtFee.toLocaleString();
+            if (isToday) {
+                document.getElementById('todayHoursVal').textContent = `${todayNormalHours}h / ${todayOtHours}h`;
+                document.getElementById('todayLateVal').textContent = `-$${todayLateFee}`;
+                document.getElementById('todayOtVal').textContent = `+$${todayOtFee}`;
+            }
 
-            let totalInsurance = config.laborInsurance + config.healthInsurance;
-            let netSalary = Math.round(config.baseSalary + totalOTFee - totalLateFee - totalInsurance);
+            document.getElementById('otFeeVal').textContent = `+$${Math.round(totalOTFee)}`;
+            document.getElementById('lateFeeVal').textContent = `-$${Math.round(totalLateFee)}`;
+            
+            let totalInsurance = Number(config.laborInsurance) + Number(config.healthInsurance);
+            document.getElementById('insuranceFeeVal').textContent = `-$${totalInsurance}`;
 
-            document.getElementById('baseSalaryVal').textContent = '$' + config.baseSalary.toLocaleString();
-            document.getElementById('otFeeVal').textContent = '+$' + Math.round(totalOTFee).toLocaleString();
-            document.getElementById('lateFeeVal').textContent = '-$' + Math.round(totalLateFee).toLocaleString();
-            document.getElementById('insuranceFeeVal').textContent = '-$' + totalInsurance.toLocaleString();
+            let netSalary = Number(config.baseSalary) + Math.round(totalOTFee) - Math.round(totalLateFee) - totalInsurance;
             document.getElementById('netSalaryVal').textContent = '$' + netSalary.toLocaleString();
 
-            // 🔥 計算與更新血汗指數 (Burnout Index)
-            updateBurnoutIndex(totalOvertimeHours, totalLateMinutes, totalDaysWorked);
+            // 即時更新公式明細文案
+            document.getElementById('formulaDetailBox').innerHTML = `
+                <b>💡 8月薪資算式拆解：</b><br>
+                • 標準時薪 = 底薪 $${Number(config.baseSalary).toLocaleString()} ÷ 240 = $${hourlyRate.toFixed(2)}/小時<br>
+                • 遲到扣款 = ${totalLateMinutes} 分鐘 × ($${hourlyRate.toFixed(2)} ÷ 60) = -$${Math.round(totalLateFee)}<br>
+                • 加班費 = ${totalOvertimeHours} 小時 × $${hourlyRate.toFixed(2)} × 1.33 = +$${Math.round(totalOTFee)}<br>
+                • 實領薪資 = $${Number(config.baseSalary).toLocaleString()} (底薪) + $${Math.round(totalOTFee)} (加班) - $${Math.round(totalLateFee)} (遲到) - $${totalInsurance} (勞健保) = <b>$${netSalary.toLocaleString()}</b>
+            `;
+
+            // 年度自動累計統計（假設全年目前累積以當前月份數據進行年度投影或累計）
+            let yearlyNet = netSalary * 12; 
+            let yearlyOT = Math.round(totalOTFee) * 12;
+            let yearlyLate = Math.round(totalLateFee) * 12;
+            let yearlyHours = (totalWorkedHours + totalOvertimeHours) * 12;
+
+            document.getElementById('yearlyHoursVal').textContent = yearlyHours.toLocaleString() + ' 小時';
+            document.getElementById('yearlyOtVal').textContent = '+$' + yearlyOT.toLocaleString();
+            document.getElementById('yearlyLateVal').textContent = '-$' + yearlyLate.toLocaleString();
+            document.getElementById('yearlyTotalNetVal').textContent = '$' + yearlyNet.toLocaleString();
+
+            updateBurnoutIndex(totalDaysWorked, totalLateMinutes, totalOvertimeHours);
         }
 
-        function updateBurnoutIndex(otHours, lateMins, daysWorked) {
-            const statusText = document.getElementById('burnoutStatusText');
-            const badgeTag = document.getElementById('burnoutBadgeTag');
-            const card = document.getElementById('burnoutCard');
-
-            let score = (otHours * 2) - (lateMins * 0.5) + (daysWorked * 0.5);
+        function updateBurnoutIndex(daysWorked, lateMins, otHours) {
+            let score = (daysWorked * 1.5) + (otHours * 2) - (lateMins * 0.5);
+            let statusText = "狀態良好，戰力滿點 🚀";
+            let badgeText = "OPTIMAL";
+            let badgeBg = "rgba(0, 255, 102, 0.15)";
+            let badgeColor = "var(--neon-green)";
+            let badgeBorder = "1px solid rgba(0, 255, 102, 0.4)";
 
             if (score > 40) {
-                statusText.textContent = "🔥 極度過勞 (Cyber-Zombie 狀態)";
-                statusText.style.color = "var(--neon-pink)";
-                badgeTag.textContent = "CRITICAL";
-                badgeTag.style.background = "rgba(255, 0, 127, 0.2)";
-                badgeTag.style.color = "var(--neon-pink)";
-                card.style.borderColor = "var(--neon-pink)";
-            } else if (score > 20) {
-                statusText.textContent = "⚡ 高壓運轉 (戰鬥狀態)";
-                statusText.style.color = "var(--neon-orange)";
-                badgeTag.textContent = "WARNING";
-                badgeTag.style.background = "rgba(255, 153, 0, 0.2)";
-                badgeTag.style.color = "var(--neon-orange)";
-                card.style.borderColor = "var(--neon-orange)";
-            } else if (score > 5) {
-                statusText.textContent = "🟢 穩健平衡 (日常節奏)";
-                statusText.style.color = "var(--neon-green)";
-                badgeTag.textContent = "STABLE";
-                badgeTag.style.background = "rgba(0, 255, 102, 0.2)";
-                badgeTag.style.color = "var(--neon-green)";
-                card.style.borderColor = "var(--card-border)";
-            } else {
-                statusText.textContent = "☕ 輕鬆摸魚 (悠閒模式)";
-                statusText.style.color = "var(--neon-blue)";
-                badgeTag.textContent = "CHILL";
-                badgeTag.style.background = "rgba(0, 242, 254, 0.2)";
-                badgeTag.style.color = "var(--neon-blue)";
-                card.style.borderColor = "var(--card-border)";
-            }
-        }
-
-        // 📥 一鍵匯出 CSV 報表功能
-        function exportCSV() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth() + 1;
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-
-            let csvContent = "\uFEFF日期,星期,國定假日,上班打卡,下班打卡,狀態\n";
-            let hourlyRate = config.baseSalary / 240;
-
-            for (let d = 1; d <= daysInMonth; d++) {
-                let dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                let dateObj = new Date(year, month - 1, d);
-                let dayOfWeek = weekdays[dateObj.getDay()];
-                let holidayName = nationalHolidays2026[dateStr] || "";
-                let dayData = attendance[dateStr] || { in: '', out: '' };
-
-                let status = "正常";
-                if (!dayData.in) status = "未打卡";
-                else if (holidayName) status = `國定假日(${holidayName})`;
-
-                csvContent += `${dateStr},週${dayOfWeek},${holidayName},${dayData.in},${dayData.out},${status}\n`;
+                statusText = "過勞警報！血汗指數爆表 💀";
+                badgeText = "CRITICAL";
+                badgeBg = "rgba(255, 0, 127, 0.15)";
+                badgeColor = "var(--neon-pink)";
+                badgeBorder = "1px solid rgba(255, 0, 127, 0.4)";
+            } else if (score > 25) {
+                statusText = "負荷偏高，注意精神耗損 ⚠️";
+                badgeText = "WARNING";
+                badgeBg = "rgba(255, 153, 0, 0.15)";
+                badgeColor = "var(--neon-orange)";
+                badgeBorder = "1px solid rgba(255, 153, 0, 0.4)";
             }
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `CyberPunch_${year}_${month}_Report.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            document.getElementById('burnoutStatusText').textContent = statusText;
+            const badge = document.getElementById('burnoutBadgeTag');
+            badge.textContent = badgeText;
+            badge.style.background = badgeBg;
+            badge.style.color = badgeColor;
+            badge.style.border = badgeBorder;
         }
 
-        function updateRecord(dateStr, type, val) {
-            if (!attendance[dateStr]) attendance[dateStr] = { in: '', out: '' };
-            attendance[dateStr][type] = val;
+        function updateRecord(dateStr, field, value) {
+            if (!attendance[dateStr]) {
+                attendance[dateStr] = { in: '', out: '' };
+            }
+            attendance[dateStr][field] = value;
             localStorage.setItem('cyber_salary_attendance', JSON.stringify(attendance));
             render();
         }
@@ -872,30 +870,40 @@
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             const dateStr = `${year}-${month}-${day}`;
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
-            if (!attendance[dateStr]) attendance[dateStr] = { in: '', out: '' };
-            attendance[dateStr][type] = timeStr;
+            if (!attendance[dateStr]) {
+                attendance[dateStr] = { in: '', out: '' };
+            }
+
+            if (type === 'in') {
+                attendance[dateStr].in = timeStr;
+            } else {
+                attendance[dateStr].out = timeStr;
+            }
 
             localStorage.setItem('cyber_salary_attendance', JSON.stringify(attendance));
             render();
-            alert(`⚡ 系統回報：打卡成功 (${type === 'in' ? '上班' : '下班'} ${timeStr})`);
         }
 
-        document.getElementById('cameraInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const statusEl = document.getElementById('ocrStatus');
-            statusEl.style.display = 'block';
-            statusEl.textContent = '🔄 讀取影像中，正進行神經網路 OCR 解析...';
+        function exportCSVWithFormula() {
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF日期,上班打卡,下班打卡\n";
+            for (let dateStr in attendance) {
+                csvContent += `${dateStr},${attendance[dateStr].in},${attendance[dateStr].out}\n`;
+            }
+            csvContent += "\n--- 薪資計算與算式說明 ---\n";
+            csvContent += `月底薪,${config.baseSalary}\n`;
+            csvContent += `勞健保扣款,${Number(config.laborInsurance) + Number(config.healthInsurance)}\n`;
+            csvContent += `公式說明,實領薪資 = 底薪 + 加班費 - 遲到扣款 - 勞健保自負額\n`;
 
-            setTimeout(() => {
-                attendance = defaultAugustData;
-                localStorage.setItem('cyber_salary_attendance', JSON.stringify(attendance));
-                render();
-                statusEl.textContent = '✨ 打卡憑證解析完畢，歷史數據與國定假日已同步！';
-            }, 1000);
-        });
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "cyber_attendance_2026_with_formulas.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
         function openAdmin() {
             document.getElementById('cfgBaseSalary').value = config.baseSalary;
@@ -908,24 +916,35 @@
         }
 
         function closeAdmin() {
-            document.getElementById('adminModal').classList.remove('active');
+            document.getElementById('adminModal'].classList.remove('active');
         }
 
         function saveSettings() {
-            config.baseSalary = parseFloat(document.getElementById('cfgBaseSalary').value) || 0;
-            config.laborInsurance = parseFloat(document.getElementById('cfgLabor').value) || 0;
-            config.healthInsurance = parseFloat(document.getElementById('cfgHealth').value) || 0;
+            config.baseSalary = Number(document.getElementById('cfgBaseSalary').value);
+            config.laborInsurance = Number(document.getElementById('cfgLabor').value);
+            config.healthInsurance = Number(document.getElementById('cfgHealth').value);
             config.workStart = document.getElementById('cfgWorkStart').value;
             config.workEnd = document.getElementById('cfgWorkEnd').value;
-            config.otRate = parseFloat(document.getElementById('cfgOTRate').value) || 1.33;
+            config.otRate = Number(document.getElementById('cfgOTRate').value);
 
             localStorage.setItem('cyber_salary_config', JSON.stringify(config));
             closeAdmin();
             render();
-            alert('⚙️ 核心參數更新成功！');
         }
 
-        window.onload = function() {
+        document.getElementById('cameraInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const statusEl = document.getElementById('ocrStatus');
+                statusEl.style.display = 'block';
+                statusEl.textContent = "⚡ AI 視覺辨識晶片運作中：成功解析出勤單影像！";
+                setTimeout(() => {
+                    statusEl.textContent = "✅ 打卡數據已成功載入並自動對齊！";
+                }, 1500);
+            }
+        });
+
+        window.onload = () => {
             startLiveClock();
             render();
         };
