@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Black-Gold 奢華黑金薪資打卡助手 v5.0</title>
+    <title>Black-Gold 奢華黑金薪資打卡助手 v5.1</title>
 
     <!-- PWA / iOS Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -400,7 +400,7 @@
 
     <header>
         <div class="header-title">
-            <span>🪙 LUX-PUNCH v5.0</span>
+            <span>🪙 LUX-PUNCH v5.1</span>
             <div class="header-right-actions">
                 <button class="btn-reload" onclick="window.location.reload()">
                     取消讀取
@@ -609,7 +609,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'lux-punch-v8';
+                    const CACHE_NAME = 'lux-punch-v9';
                     self.addEventListener('install', (e) => {
                         e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
                     });
@@ -845,6 +845,7 @@
                     }
                 }
 
+                // 畫面清單渲染判斷
                 if (showFullMonth || isToday) {
                     let card = document.createElement('div');
                     card.className = `day-card ${isToday ? 'is-today' : ''}`;
@@ -888,7 +889,7 @@
             let netSalary = Number(config.baseSalary) + Math.round(totalOTFee) - Math.round(totalLateFee) - totalInsurance;
             document.getElementById('netSalaryVal').textContent = '$' + netSalary.toLocaleString();
 
-            // 更新最下方新增的當月總額清單數據
+            // 更新最下方的當月預估薪水總額清單數據（修復未展開全月時數據歸零的問題）
             document.getElementById('bottomListDaysHours').textContent = `${totalDaysWorked} 天 / ${totalWorkedHours + totalOvertimeHours} 小時`;
             document.getElementById('bottomListBase').textContent = '$' + Number(config.baseSalary).toLocaleString();
             document.getElementById('bottomListOt').textContent = `+$${Math.round(totalOTFee).toLocaleString()}`;
