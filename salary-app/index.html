@@ -70,6 +70,12 @@
             color: var(--text-main);
         }
 
+        .header-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .badge {
             font-size: 13px;
             background: rgba(0, 242, 254, 0.12);
@@ -80,6 +86,24 @@
             font-weight: 700;
             font-variant-numeric: tabular-nums;
             box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        .btn-reload {
+            background: rgba(255, 0, 127, 0.15);
+            color: var(--neon-pink);
+            border: 1px solid rgba(255, 0, 127, 0.4);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
+        }
+        .btn-reload:active {
+            transform: scale(0.95);
         }
 
         .sub-header {
@@ -398,7 +422,13 @@
     <header>
         <div class="header-title">
             <span>⚡ CYBERPUNCH v5.0</span>
-            <span class="badge" id="liveClockBadge">--:--:--</span>
+            <div class="header-right-actions">
+                <!-- 🔄 新增：取消讀取/重新整理按鈕 -->
+                <button class="btn-reload" onclick="window.location.reload()">
+                    🔄 取消讀取
+                </button>
+                <span class="badge" id="liveClockBadge">--:--:--</span>
+            </div>
         </div>
         <div class="sub-header">
             <span id="currentTodayText">📅 今日日期載入中...</span>
@@ -831,7 +861,6 @@
             let netSalary = Number(config.baseSalary) + Math.round(totalOTFee) - Math.round(totalLateFee) - totalInsurance;
             document.getElementById('netSalaryVal').textContent = '$' + netSalary.toLocaleString();
 
-            // 🔥 更新算式拆解面板
             document.getElementById('formulaDetailBox').innerHTML = `
                 <b>💡 本月薪資算式拆解：</b><br>
                 • 標準時薪 = 底薪 $${Number(config.baseSalary).toLocaleString()} ÷ 240 = $${hourlyRate.toFixed(2)}/小時<br>
@@ -840,7 +869,6 @@
                 • 實領薪資 = $${Number(config.baseSalary).toLocaleString()} (底薪) + $${Math.round(totalOTFee)} (加班) - $${Math.round(totalLateFee)} (遲到) - $${totalInsurance} (勞健保) = <b>$${netSalary.toLocaleString()}</b>
             `;
 
-            // 🔥 更新年度累計總結算看板
             let yearlyNet = netSalary * 12;
             let yearlyOT = Math.round(totalOTFee) * 12;
             let yearlyLate = Math.round(totalLateFee) * 12;
